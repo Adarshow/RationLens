@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_Malayalam, Noto_Serif } from "next/font/google";
 import "./globals.css";
+import { LanguageProvider } from "@/components/LanguageProvider";
+import { TopBar } from "@/components/TopBar";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -39,7 +41,10 @@ export default function RootLayout({
       className={`${notoSans.variable} ${notoMalayalam.variable} ${notoSerif.variable}`}
     >
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
-        {children}
+        <LanguageProvider>
+          <TopBar />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

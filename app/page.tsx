@@ -1,19 +1,26 @@
-import Link from "next/link";
+"use client";
 
-export default function HomePage() {
+import Link from "next/link";
+import { PageShell } from "@/components/PageShell";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { SecondaryButton } from "@/components/SecondaryButton";
+import { useLanguage } from "@/components/LanguageProvider";
+
+export default function WelcomePage() {
+  const { t } = useLanguage();
+
   return (
-    <main className="mx-auto max-w-xl px-4 py-16">
-      <h1 className="font-serif text-title">RationLens</h1>
-      <p className="mt-3 text-body text-muted">
-        Design tokens are ready. Open the swatch page to review the look before
-        real screens are built.
-      </p>
-      <Link
-        href="/design-preview"
-        className="mt-8 inline-flex min-h-tap items-center justify-center border-2 border-stamp bg-stamp px-5 text-base font-semibold text-white"
-      >
-        Open design preview
-      </Link>
-    </main>
+    <PageShell>
+      <h1 className="font-serif text-title">{t.landingTitle}</h1>
+      <p className="mt-3 text-body">{t.landingBody}</p>
+      <div className="mt-6 flex flex-col gap-3">
+        <Link href="/dashboard">
+          <PrimaryButton type="button">{t.findShop}</PrimaryButton>
+        </Link>
+        <Link href="/login">
+          <SecondaryButton type="button">{t.imShopkeeper}</SecondaryButton>
+        </Link>
+      </div>
+    </PageShell>
   );
 }

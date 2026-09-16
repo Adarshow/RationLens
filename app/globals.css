@@ -36,6 +36,12 @@ body {
   outline-offset: 3px;
 }
 
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  font-family: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
