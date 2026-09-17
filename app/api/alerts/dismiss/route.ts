@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   const { error } = await supabase
     .from("alerts")
-    .update({ status: "dismissed" })
+    .update({ status: "cancelled" })
     .eq("shop_id", shopId)
     .eq("item_id", itemId)
     .eq("status", "active");

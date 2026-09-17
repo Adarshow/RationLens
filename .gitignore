@@ -6,6 +6,7 @@
 
 # testing
 /coverage
+rationlens-2day-build-plan.md
 
 # next.js
 /.next/
@@ -25,9 +26,14 @@ yarn-error.log*
 
 # env files
 .env*.local
+.env
 
 # vercel
 .vercel
 
 # typescript
 next-env.d.ts
+
+#Supabase
+/supabase/*
+!/supabase/schema.sql

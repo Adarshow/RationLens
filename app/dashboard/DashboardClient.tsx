@@ -30,7 +30,9 @@ type Props = {
 export function DashboardClient({ shops, stockByShop }: Props) {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
-  const [showChip, setShowChip] = useState(false);
+  const [searchItem, setSearchItem] = useState<string | null>(null);
+  const [searchLabel, setSearchLabel] = useState("");
+  const [searchPending, setSearchPending] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
   const [noteDismissed, setNoteDismissed] = useState(false);
   const { location, status, refresh } = useUserLocation();
@@ -45,10 +47,49 @@ export function DashboardClient({ shops, stockByShop }: Props) {
     [activeLocation, shops],
   );
 
-  function onSearch(event: FormEvent) {
+  async function onSearch(event: FormEvent) {
     event.preventDefault();
-    setShowChip(true);
+    const value = query.trim();
+    if (!value) {
+      setSearchItem(null);
+      setSearchLabel("");
+      return;
+    }
+
+    setSearchPending(true);
+    try {
+      const response = await fetch("/api/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: value }),
+      });
+      const result = (await response.json()) as {
+        item?: string | null;
+        intent?: string;
+      };
+      setSearchItem(result.item ?? null);
+      setSearchLabel(
+        `Understood: ${result.intent?.replaceAll("_", " ") ?? "check stock"}${
+          result.item ? ` - ${result.item}` : ""
+        }`,
+      );
+    } catch {
+      setSearchItem(null);
+      setSearchLabel("");
+    } finally {
+      setSearchPending(false);
+    }
   }
+
+  const filteredShops = sorted.filter((shop) => {
+    if (!searchItem && !query.trim()) return true;
+    const value = (searchItem ?? query).toLowerCase();
+    return (stockByShop[shop.id] ?? []).some((row) =>
+      [row.item.name, ...Object.values(row.item.localized_names)]
+        .filter(Boolean)
+        .some((name) => name.toLowerCase().includes(value)),
+    );
+  });
 
   const locationNote =
     status === "loading" ? (
@@ -80,7 +121,7 @@ export function DashboardClient({ shops, stockByShop }: Props) {
 
   const filters = (
     <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-      <form onSubmit={onSearch} className="flex flex-col gap-3">
+      <form onSubmit={(event) => void onSearch(event)} className="flex flex-col gap-3">
         <Input
           id="query"
           label={t.search}
@@ -89,13 +130,13 @@ export function DashboardClient({ shops, stockByShop }: Props) {
           onChange={(event) => setQuery(event.target.value)}
         />
         {locationNote}
-        <Button type="submit" fullWidth>
+        <Button type="submit" fullWidth disabled={searchPending}>
           {t.search}
         </Button>
       </form>
-      {showChip ? (
+      {searchLabel ? (
         <Card variant="browse">
-          <p className="font-medium text-ink">{t.understood}</p>
+          <p className="font-medium text-ink">{searchLabel}</p>
         </Card>
       ) : null}
       <div className="grid grid-cols-2 gap-3">
@@ -131,13 +172,13 @@ export function DashboardClient({ shops, stockByShop }: Props) {
           <div className="mt-3">
             {view === "map" ? (
               <ShopMap
-                shops={sorted}
+                shops={filteredShops}
                 userLocation={activeLocation}
                 showUserMarker={status === "granted"}
               />
             ) : (
               <CardGrid>
-                {sorted.map((shop) => (
+                {filteredShops.map((shop) => (
                   <ShopCard
                     key={shop.id}
                     shop={shop}
@@ -147,6 +188,11 @@ export function DashboardClient({ shops, stockByShop }: Props) {
                 ))}
               </CardGrid>
             )}
+            {filteredShops.length === 0 ? (
+              <Card variant="browse" className="mt-4">
+                <p className="text-sm text-ink/70">No matching stock found.</p>
+              </Card>
+            ) : null}
           </div>
         </div>
       </div>

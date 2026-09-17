@@ -1,5 +1,6 @@
 import { NotificationsClient } from "./NotificationsClient";
 import { createClient } from "@/lib/supabase/server";
+import { notifications as fallbackNotifications } from "@/lib/mockData";
 import type { Notification } from "@/lib/types";
 
 function toNotification(row: Notification): Notification {
@@ -13,21 +14,29 @@ function toNotification(row: Notification): Notification {
 }
 
 export default async function NotificationsPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return <NotificationsClient rows={[]} />;
+    if (!user) {
+      return <NotificationsClient rows={[]} />;
+    }
+
+    const { data } = await supabase
+      .from("notifications")
+      .select("id, user_id, message, read, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    const rows = ((data ?? []) as Notification[]).map(toNotification);
+    if (rows.length > 0) {
+      return <NotificationsClient rows={rows} />;
+    }
+  } catch {
+    // Fall back to the seeded demo notifications when the live schema is still sparse.
   }
 
-  const { data } = await supabase
-    .from("notifications")
-    .select("id, user_id, message, read, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  const rows = ((data ?? []) as Notification[]).map(toNotification);
-  return <NotificationsClient rows={rows} />;
+  return <NotificationsClient rows={fallbackNotifications} />;
 }
