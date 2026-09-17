@@ -20,8 +20,8 @@ export function ShopCard({ shop, stockRows }: Props) {
 
   return (
     <Card as="article" variant="browse">
-      <h2 className="text-xl font-bold text-ink">{shop.name}</h2>
-      <p className="mt-1 text-body text-ink/70">
+      <h2 className="text-base font-bold text-ink md:text-lg">{shop.name}</h2>
+      <p className="mt-1 text-sm text-ink/70 md:text-base">
         {km} km {t.away}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -33,7 +33,7 @@ export function ShopCard({ shop, stockRows }: Props) {
           />
         ))}
       </div>
-      <ul className="mt-3 text-body text-ink/70">
+      <ul className="mt-3 text-sm text-ink/70 md:text-base">
         {pills.map((row) => (
           <li key={`${row.id}-label`}>
             {lang === "ml"
@@ -44,7 +44,7 @@ export function ShopCard({ shop, stockRows }: Props) {
           </li>
         ))}
       </ul>
-      <Button href={`/shops/${shop.id}`} className="mt-4">
+      <Button href={`/shops/${shop.id}`} className="mt-4" fullWidth>
         {t.viewShop}
       </Button>
     </Card>

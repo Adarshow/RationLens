@@ -27,12 +27,12 @@ export function UpdateForm({ row, onSaved }: Props) {
   }
 
   return (
-    <Card as="form" variant="browse" className="mt-6" onSubmit={(event) => {
+    <Card as="form" variant="browse" className="lg:sticky lg:top-24" onSubmit={(event) => {
       event.preventDefault();
       onSaved();
     }}>
       <SectionHeading>{t.manualUpdate}</SectionHeading>
-      <div className="mt-3 grid grid-cols-1 gap-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {(
           [
             ["available", "Available"],
@@ -44,6 +44,7 @@ export function UpdateForm({ row, onSaved }: Props) {
             key={value}
             type="button"
             variant={status === value ? "primary" : "secondary"}
+            fullWidth
             onClick={() => setStatusAndQty(value)}
           >
             {label}
@@ -81,7 +82,9 @@ export function UpdateForm({ row, onSaved }: Props) {
         </Button>
       </div>
       <div className="mt-4">
-        <Button type="submit">{t.saveUpdate}</Button>
+        <Button type="submit" fullWidth>
+          {t.saveUpdate}
+        </Button>
       </div>
     </Card>
   );

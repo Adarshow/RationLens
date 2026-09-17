@@ -25,7 +25,7 @@ export default function ShopMap({ shops }: Props) {
   }, []);
 
   return (
-    <div className="h-[360px] w-full overflow-hidden rounded-2xl bg-paper-dim shadow-card">
+    <div className="h-[280px] w-full overflow-hidden rounded-2xl bg-paper-dim shadow-card md:h-[420px] lg:h-[520px]">
       <MapContainer
         center={[USER_LOCATION.latitude, USER_LOCATION.longitude]}
         zoom={14}

@@ -3,10 +3,14 @@
 import { FormEvent, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ShopCard } from "@/components/ShopCard";
-import { PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import {
+  CardGrid,
+  PageContainer,
+  PageTitle,
+} from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getStockForShop, shops, shopDistanceKm } from "@/lib/mockData";
@@ -29,11 +33,9 @@ export default function DashboardPage() {
     setShowChip(true);
   }
 
-  return (
-    <PageShell>
-      <h1 className="text-title font-extrabold text-ink">{t.nearbyShops}</h1>
-
-      <form className="mt-4" onSubmit={onSearch}>
+  const filters = (
+    <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
+      <form onSubmit={onSearch} className="flex flex-col gap-3">
         <Input
           id="query"
           label={t.search}
@@ -41,20 +43,19 @@ export default function DashboardPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <div className="mt-3">
-          <Button type="submit">{t.search}</Button>
-        </div>
+        <Button type="submit" fullWidth>
+          {t.search}
+        </Button>
       </form>
-
       {showChip ? (
-        <Card variant="browse" className="mt-4">
+        <Card variant="browse">
           <p className="font-medium text-ink">{t.understood}</p>
         </Card>
       ) : null}
-
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Button
           type="button"
+          fullWidth
           variant={view === "list" ? "primary" : "secondary"}
           onClick={() => setView("list")}
         >
@@ -62,33 +63,42 @@ export default function DashboardPage() {
         </Button>
         <Button
           type="button"
+          fullWidth
           variant={view === "map" ? "primary" : "secondary"}
           onClick={() => setView("map")}
         >
           {t.map}
         </Button>
       </div>
+    </aside>
+  );
 
-      <div className="mt-6">
-        <SectionHeading>
-          {view === "map" ? t.map : t.list}
-        </SectionHeading>
-        <div className="mt-3">
-          {view === "map" ? (
-            <ShopMap shops={sorted} />
-          ) : (
-            <div className="flex flex-col gap-3">
-              {sorted.map((shop) => (
-                <ShopCard
-                  key={shop.id}
-                  shop={shop}
-                  stockRows={getStockForShop(shop.id)}
-                />
-              ))}
-            </div>
-          )}
+  return (
+    <PageContainer>
+      <PageTitle>{t.nearbyShops}</PageTitle>
+      <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,20rem)_1fr] lg:items-start lg:gap-8">
+        {filters}
+        <div>
+          <SectionHeading>
+            {view === "map" ? t.map : t.list}
+          </SectionHeading>
+          <div className="mt-3">
+            {view === "map" ? (
+              <ShopMap shops={sorted} />
+            ) : (
+              <CardGrid>
+                {sorted.map((shop) => (
+                  <ShopCard
+                    key={shop.id}
+                    shop={shop}
+                    stockRows={getStockForShop(shop.id)}
+                  />
+                ))}
+              </CardGrid>
+            )}
+          </div>
         </div>
       </div>
-    </PageShell>
+    </PageContainer>
   );
 }

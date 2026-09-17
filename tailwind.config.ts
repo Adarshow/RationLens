@@ -38,14 +38,8 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "var(--font-ml)", "sans-serif"],
       },
-      fontSize: {
-        body: ["1.0625rem", { lineHeight: "1.6" }],
-        title: ["1.75rem", { lineHeight: "1.25", fontWeight: "800" }],
-        section: ["15px", { lineHeight: "1.3", fontWeight: "700" }],
-      },
       minHeight: {
         tap: "44px",
-        btn: "48px",
       },
       boxShadow: {
         card: "0 1px 2px rgba(16, 38, 43, 0.06)",

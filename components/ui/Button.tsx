@@ -7,7 +7,7 @@ export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   variant?: ButtonVariant;
-  fullWidth?: boolean;
+  fullWidth?: boolean | "responsive";
   href?: string;
   external?: boolean;
 };
@@ -20,15 +20,21 @@ const variants: Record<ButtonVariant, string> = {
   ghost: "bg-transparent text-ink hover:bg-paper-dim",
 };
 
+function widthClass(fullWidth: boolean | "responsive") {
+  if (fullWidth === true) return "w-full";
+  if (fullWidth === false) return "w-auto min-w-11";
+  return "w-full md:w-auto md:min-w-11";
+}
+
 function buttonClass(
   variant: ButtonVariant,
-  fullWidth: boolean,
+  fullWidth: boolean | "responsive",
   className?: string,
 ) {
   return cn(
-    "inline-flex h-12 min-h-btn items-center justify-center rounded-lg px-5 text-center text-base font-semibold",
+    "inline-flex h-11 items-center justify-center rounded-lg px-4 text-center text-sm font-semibold md:h-10 md:text-base",
     "disabled:pointer-events-none disabled:opacity-60",
-    fullWidth ? "w-full" : "w-auto min-w-11",
+    widthClass(fullWidth),
     variants[variant],
     className,
   );
@@ -38,7 +44,7 @@ export function Button({
   children,
   className,
   variant = "primary",
-  fullWidth = true,
+  fullWidth = "responsive",
   href,
   external,
   type = "button",

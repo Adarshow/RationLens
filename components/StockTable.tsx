@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { StatusBadge, stockLabel, stockTone } from "@/components/ui/StatusBadge";
 import { Card } from "@/components/ui/Card";
+import { CardGrid } from "@/components/ui/PageContainer";
 import { TrustBadge } from "@/components/TrustBadge";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { StockWithItem } from "@/lib/mockData";
@@ -10,13 +11,14 @@ import type { StockWithItem } from "@/lib/mockData";
 type Props = {
   rows: StockWithItem[];
   action?: (row: StockWithItem) => ReactNode;
+  columns?: 2 | 3;
 };
 
-export function StockTable({ rows, action }: Props) {
+export function StockTable({ rows, action, columns = 3 }: Props) {
   const { lang } = useLanguage();
 
   return (
-    <div className="flex flex-col gap-3">
+    <CardGrid columns={columns}>
       {rows.map((row) => {
         const name =
           lang === "ml"
@@ -49,6 +51,6 @@ export function StockTable({ rows, action }: Props) {
           </Card>
         );
       })}
-    </div>
+    </CardGrid>
   );
 }

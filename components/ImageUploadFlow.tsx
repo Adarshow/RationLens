@@ -33,8 +33,8 @@ export function ImageUploadFlow() {
   if (step === "published") {
     return (
       <Card variant="alert" tone="success">
-        <p className="text-body">{t.published}</p>
-        <Button href="/shopkeeper" className="mt-4">
+        <p className="text-sm md:text-base">{t.published}</p>
+        <Button href="/shopkeeper" className="mt-4" fullWidth>
           {t.back}
         </Button>
       </Card>
@@ -44,7 +44,7 @@ export function ImageUploadFlow() {
   if (step === "loading") {
     return (
       <Card variant="browse">
-        <p className="text-body">{t.reading}</p>
+        <p className="text-sm md:text-base">{t.reading}</p>
       </Card>
     );
   }
@@ -53,8 +53,8 @@ export function ImageUploadFlow() {
     return (
       <Card variant="browse">
         <SectionHeading>{t.weDetected}</SectionHeading>
-        <p className="mt-2 text-body text-ink/70">{t.checkNumbers}</p>
-        <ul className="mt-4 flex flex-col gap-3">
+        <p className="mt-2 text-sm text-ink/70 md:text-base">{t.checkNumbers}</p>
+        <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {rows.map((row, index) => (
             <li key={row.item}>
               <Input
@@ -71,9 +71,10 @@ export function ImageUploadFlow() {
             </li>
           ))}
         </ul>
-        <div className="mt-4 flex flex-col gap-2">
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <Button
             type="button"
+            fullWidth
             onClick={() => {
               setStep("published");
             }}
@@ -93,18 +94,18 @@ export function ImageUploadFlow() {
 
   return (
     <Card variant="browse">
-      <p className="text-body">{t.choosePhoto}</p>
+      <p className="text-sm md:text-base">{t.choosePhoto}</p>
       <label className="mt-4 block">
         <span className="sr-only">{t.uploadImage}</span>
         <input
           type="file"
           accept="image/*"
-          className="block w-full text-body"
+          className="block w-full text-sm md:text-base"
           onChange={() => startRead()}
         />
       </label>
       <div className="mt-4">
-        <Button type="button" onClick={startRead}>
+        <Button type="button" onClick={startRead} fullWidth>
           {t.uploadImage}
         </Button>
       </div>

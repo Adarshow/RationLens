@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, SelectHTMLAttributes, ReactNode } from "react
 import { cn } from "@/lib/cn";
 
 const controlClass =
-  "h-12 min-h-btn w-full rounded-lg border bg-white px-3 text-body text-ink";
+  "h-11 w-full rounded-lg border bg-white px-3 text-sm text-ink md:h-10 md:text-base";
 
 function fieldBorder(hasError?: boolean) {
   return hasError
@@ -26,7 +26,7 @@ export function Input({
 }: InputProps) {
   const hasError = Boolean(error) || invalid;
   return (
-    <div>
+    <div className="w-full">
       <label htmlFor={id} className="block text-sm font-semibold text-ink">
         {label}
       </label>
@@ -58,7 +58,7 @@ export function Select({
   ...props
 }: SelectProps) {
   return (
-    <div>
+    <div className="w-full">
       <label htmlFor={id} className="block text-sm font-semibold text-ink">
         {label}
       </label>

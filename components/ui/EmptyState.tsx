@@ -8,7 +8,7 @@ type Props = {
 
 export function EmptyState({ title, body, action }: Props) {
   return (
-    <div className="flex flex-col items-start gap-3 py-6 text-left">
+    <div className="mx-auto flex max-w-sm flex-col items-center gap-3 py-8 text-center">
       <span
         aria-hidden
         className="flex h-11 w-11 items-center justify-center rounded-lg bg-paper-dim text-ink"
@@ -31,8 +31,10 @@ export function EmptyState({ title, body, action }: Props) {
           />
         </svg>
       </span>
-      <p className="text-base font-semibold text-ink">{title}</p>
-      {body ? <p className="text-body text-ink/70">{body}</p> : null}
+      <p className="text-sm font-semibold text-ink md:text-base">{title}</p>
+      {body ? (
+        <p className="text-sm text-ink/70 md:text-base">{body}</p>
+      ) : null}
       {action ? <div className="w-full">{action}</div> : null}
     </div>
   );
