@@ -27,11 +27,6 @@ export type UserLocation = {
   longitude: number;
 };
 
-export const TEST_LOGINS = {
-  citizen: { email: "citizen@demo.com", password: "demo123" },
-  shopkeeper: { email: "shopkeeper@demo.com", password: "demo123" },
-} as const;
-
 export const shops: Shop[] = [
   {
     id: "shop-a",

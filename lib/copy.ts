@@ -37,8 +37,8 @@ export const copy = {
     name: "Your name",
     role: "I am",
     assignedShop: "My shop",
-    loginError: "That email or password is not right. Try the demo login on this page.",
-    demoHint: "Demo: citizen@demo.com or shopkeeper@demo.com, password demo123",
+    loginError: "That email or password is not right.",
+    checkEmail: "Check your email to confirm your account",
     nearbyShops: "Nearby shops",
     shopNotFound: "This shop is not on the list.",
     checkNumbers:
@@ -99,8 +99,8 @@ export const copy = {
     name: "പേര്",
     role: "ഞാൻ ഒരു",
     assignedShop: "എന്റെ കട",
-    loginError: "ഇമെയിലോ പാസ്‌വേഡോ ശരിയല്ല. ഈ പേജിലെ ഡെമോ ലോഗിൻ പരീക്ഷിക്കുക.",
-    demoHint: "ഡെമോ: citizen@demo.com അല്ലെങ്കിൽ shopkeeper@demo.com, പാസ്‌വേഡ് demo123",
+    loginError: "ഇമെയിലോ പാസ്‌വേഡോ ശരിയല്ല.",
+    checkEmail: "അക്കൗണ്ട് സ്ഥിരീകരിക്കാൻ ഇമെയിൽ പരിശോധിക്കുക",
     nearbyShops: "അടുത്തുള്ള കടകൾ",
     shopNotFound: "ഈ കട പട്ടികയിലില്ല.",
     checkNumbers:

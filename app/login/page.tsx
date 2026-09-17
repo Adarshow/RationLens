@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
-import { TEST_LOGINS } from "@/lib/mockData";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -16,32 +16,52 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    const citizen =
-      email === TEST_LOGINS.citizen.email &&
-      password === TEST_LOGINS.citizen.password;
-    const shopkeeper =
-      email === TEST_LOGINS.shopkeeper.email &&
-      password === TEST_LOGINS.shopkeeper.password;
+    setError("");
+    setPending(true);
 
-    if (shopkeeper) {
-      router.push("/shopkeeper");
-      return;
+    try {
+      const supabase = createClient();
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({ email, password });
+
+      if (signInError || !data.user) {
+        setError(t.loginError);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (profile?.role === "shopkeeper") {
+        router.push("/shopkeeper");
+        router.refresh();
+        return;
+      }
+      if (profile?.role === "citizen") {
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      setError(t.loginError);
+    } catch {
+      setError(t.loginError);
+    } finally {
+      setPending(false);
     }
-    if (citizen) {
-      router.push("/dashboard");
-      return;
-    }
-    setError(t.loginError);
   }
 
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-lg">
         <PageTitle>{t.login}</PageTitle>
-        <p className="mt-3 text-sm text-ink/70 md:text-base">{t.demoHint}</p>
         <form className="mt-6 flex flex-col gap-4" onSubmit={onSubmit}>
           <Input
             id="email"
@@ -68,7 +88,7 @@ export default function LoginPage() {
               <p className="text-laterite">{error}</p>
             </Card>
           ) : null}
-          <Button type="submit" fullWidth>
+          <Button type="submit" fullWidth disabled={pending}>
             {t.login}
           </Button>
         </form>

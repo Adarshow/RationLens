@@ -1,14 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input, Select } from "@/components/ui/Input";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
-import { shops } from "@/lib/mockData";
+import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/types";
+
+type ShopOption = {
+  id: string;
+  name: string;
+};
 
 export default function SignupPage() {
   const { t } = useLanguage();
@@ -17,15 +23,72 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("citizen");
-  const [shopId, setShopId] = useState(shops[0]?.id ?? "");
+  const [shopId, setShopId] = useState("");
+  const [shops, setShops] = useState<ShopOption[]>([]);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [pending, setPending] = useState(false);
 
-  function onSubmit(event: FormEvent) {
+  useEffect(() => {
+    const supabase = createClient();
+    void supabase
+      .from("shops")
+      .select("id, name")
+      .order("name")
+      .then(({ data }) => {
+        const rows = data ?? [];
+        setShops(rows);
+        setShopId((current) => current || rows[0]?.id || "");
+      });
+  }, []);
+
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (role === "shopkeeper") {
-      router.push("/shopkeeper");
-      return;
+    setError("");
+    setNotice("");
+    setPending(true);
+
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError || !data.user) {
+        setError(t.loginError);
+        return;
+      }
+
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: data.user.id,
+        name,
+        role,
+        shop_id: role === "shopkeeper" ? shopId || null : null,
+      });
+
+      if (profileError && data.session) {
+        setError(t.loginError);
+        return;
+      }
+
+      if (!data.session) {
+        setNotice(t.checkEmail);
+        return;
+      }
+
+      if (role === "shopkeeper") {
+        router.push("/shopkeeper");
+        router.refresh();
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError(t.loginError);
+    } finally {
+      setPending(false);
     }
-    router.push("/dashboard");
   }
 
   return (
@@ -93,7 +156,15 @@ export default function SignupPage() {
               ))}
             </Select>
           ) : null}
-          <Button type="submit" fullWidth>
+          {error ? (
+            <Card variant="alert" tone="danger" role="alert">
+              <p className="text-laterite">{error}</p>
+            </Card>
+          ) : null}
+          {notice ? (
+            <p className="text-sm text-ink/70 md:text-base">{notice}</p>
+          ) : null}
+          <Button type="submit" fullWidth disabled={pending}>
             {t.signup}
           </Button>
         </form>
