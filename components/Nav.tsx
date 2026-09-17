@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { cn } from "@/lib/cn";
 
@@ -91,6 +92,23 @@ export function Nav() {
   const pathname = usePathname();
   const { lang, setLang, t } = useLanguage();
   const isShopkeeper = pathname.startsWith("/shopkeeper");
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (isShopkeeper) return;
+    let active = true;
+    void fetch("/api/notifications")
+      .then((response) => (response.ok ? response.json() : { count: 0 }))
+      .then((result: { count?: number }) => {
+        if (active) setUnreadCount(result.count ?? 0);
+      })
+      .catch(() => {
+        if (active) setUnreadCount(0);
+      });
+    return () => {
+      active = false;
+    };
+  }, [isShopkeeper, pathname]);
 
   const items: NavItem[] = isShopkeeper
     ? [
@@ -157,16 +175,18 @@ export function Nav() {
                 const active = isActive(item.href);
                 return (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold",
-                        active
-                          ? "bg-backwater text-white"
-                          : "text-ink/70 hover:bg-paper-dim hover:text-ink",
-                      )}
-                    >
+                    <Link href={item.href} className={cn(
+                      "inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold",
+                      active
+                        ? "bg-backwater text-white"
+                        : "text-ink/70 hover:bg-paper-dim hover:text-ink",
+                    )}>
                       {item.label}
+                      {item.href === "/notifications" && unreadCount > 0 ? (
+                        <span className="rounded-full bg-laterite px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      ) : null}
                     </Link>
                   </li>
                 );
@@ -200,7 +220,14 @@ export function Nav() {
                   >
                     {item.icon}
                   </span>
-                  <span className="line-clamp-1 text-center">{item.label}</span>
+                  <span className="relative line-clamp-1 text-center">
+                    {item.label}
+                    {item.href === "/notifications" && unreadCount > 0 ? (
+                      <span className="absolute -right-3 -top-2 rounded-full bg-laterite px-1 text-[9px] font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             );

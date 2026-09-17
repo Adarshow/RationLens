@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
+import { VoiceControls } from "@/components/VoiceControls";
 import { shopDistanceKm, type StockWithItem } from "@/lib/mockData";
 import type { Shop } from "@/lib/types";
 import {
@@ -28,10 +29,13 @@ type Props = {
 };
 
 export function DashboardClient({ shops, stockByShop }: Props) {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [searchItem, setSearchItem] = useState<string | null>(null);
+  const [searchShopIds, setSearchShopIds] = useState<string[]>([]);
   const [searchLabel, setSearchLabel] = useState("");
+  const [voiceText, setVoiceText] = useState("");
   const [searchPending, setSearchPending] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
   const [noteDismissed, setNoteDismissed] = useState(false);
@@ -47,12 +51,13 @@ export function DashboardClient({ shops, stockByShop }: Props) {
     [activeLocation, shops],
   );
 
-  async function onSearch(event: FormEvent) {
-    event.preventDefault();
-    const value = query.trim();
+  async function searchQuery(value: string) {
     if (!value) {
+      setSubmittedQuery("");
       setSearchItem(null);
+      setSearchShopIds([]);
       setSearchLabel("");
+      setVoiceText("");
       return;
     }
 
@@ -66,30 +71,72 @@ export function DashboardClient({ shops, stockByShop }: Props) {
       const result = (await response.json()) as {
         item?: string | null;
         intent?: string;
+        shop_matches?: { id: string; name: string }[];
       };
+      const shopMatches = result.shop_matches ?? [];
+      const itemNames =
+        lang === "ml"
+          ? { rice: "അരി", wheat: "ഗോതമ്പ്", sugar: "പഞ്ചസാര" }
+          : { rice: "Rice", wheat: "Wheat", sugar: "Sugar" };
+      const itemLabel = result.item
+        ? itemNames[result.item as keyof typeof itemNames] ?? result.item
+        : null;
+      const interpretation = itemLabel
+        ? `${t.searchInterpreted}: ${itemLabel} stock`
+        : shopMatches.length > 0
+          ? `${t.shopSearch}: ${shopMatches[0].name}`
+          : `${t.searchInterpreted}: ${result.intent?.replaceAll("_", " ") ?? t.search}`;
+      setSubmittedQuery(value);
       setSearchItem(result.item ?? null);
-      setSearchLabel(
-        `Understood: ${result.intent?.replaceAll("_", " ") ?? "check stock"}${
-          result.item ? ` - ${result.item}` : ""
-        }`,
+      setSearchShopIds(shopMatches.map((shop) => shop.id));
+      setSearchLabel(interpretation);
+      setVoiceText(
+        lang === "ml"
+          ? itemLabel
+            ? `${itemLabel} സ്റ്റോക്ക് തിരച്ചിൽ ഫലങ്ങൾ സ്ക്രീനിൽ കാണാം.`
+            : shopMatches.length > 0
+              ? `${shopMatches[0].name} എന്ന കടയുടെ ഫലങ്ങൾ സ്ക്രീനിൽ കാണാം.`
+              : "തിരച്ചിൽ ഫലങ്ങൾ സ്ക്രീനിൽ കാണാം."
+          : `${interpretation}. The matching results are shown on screen.`,
       );
     } catch {
+      setSubmittedQuery(value);
       setSearchItem(null);
+      setSearchShopIds([]);
       setSearchLabel("");
+      setVoiceText("I could not understand that search. Please try again.");
     } finally {
       setSearchPending(false);
     }
   }
 
+  async function onSearch(event: FormEvent) {
+    event.preventDefault();
+    await searchQuery(query.trim());
+  }
+
   const filteredShops = sorted.filter((shop) => {
-    if (!searchItem && !query.trim()) return true;
-    const value = (searchItem ?? query).toLowerCase();
-    return (stockByShop[shop.id] ?? []).some((row) =>
+    if (!submittedQuery) return true;
+    const value = (searchItem ?? submittedQuery).toLowerCase();
+    const shopMatch = searchShopIds.includes(shop.id);
+    const itemMatch = (stockByShop[shop.id] ?? []).some((row) =>
       [row.item.name, ...Object.values(row.item.localized_names)]
         .filter(Boolean)
         .some((name) => name.toLowerCase().includes(value)),
     );
+    return shopMatch || itemMatch;
   });
+
+  function rowsForShop(shopId: string) {
+    const rows = stockByShop[shopId] ?? [];
+    if (!submittedQuery || searchShopIds.includes(shopId) && !searchItem) return rows;
+    const value = (searchItem ?? submittedQuery).toLowerCase();
+    return rows.filter((row) =>
+      [row.item.name, ...Object.values(row.item.localized_names)]
+        .filter(Boolean)
+        .some((name) => name.toLowerCase().includes(value)),
+    );
+  }
 
   const locationNote =
     status === "loading" ? (
@@ -133,6 +180,14 @@ export function DashboardClient({ shops, stockByShop }: Props) {
         <Button type="submit" fullWidth disabled={searchPending}>
           {t.search}
         </Button>
+        <VoiceControls
+          lang={lang}
+          speakText={voiceText}
+          onTranscript={(value) => {
+            setQuery(value);
+            void searchQuery(value);
+          }}
+        />
       </form>
       {searchLabel ? (
         <Card variant="browse">
@@ -182,7 +237,7 @@ export function DashboardClient({ shops, stockByShop }: Props) {
                   <ShopCard
                     key={shop.id}
                     shop={shop}
-                    stockRows={stockByShop[shop.id] ?? []}
+                    stockRows={rowsForShop(shop.id)}
                     userLocation={activeLocation}
                   />
                 ))}
@@ -190,7 +245,7 @@ export function DashboardClient({ shops, stockByShop }: Props) {
             )}
             {filteredShops.length === 0 ? (
               <Card variant="browse" className="mt-4">
-                <p className="text-sm text-ink/70">No matching stock found.</p>
+                <p className="text-sm text-ink/70">{t.noMatchingStock}</p>
               </Card>
             ) : null}
           </div>

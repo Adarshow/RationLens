@@ -4,7 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { stockUpdates as fallbackUpdates } from "@/lib/mockData";
 import type { StockStatus, StockUpdate } from "@/lib/types";
 
-function toStockUpdate(row: StockUpdate): StockUpdate {
+type HistoryRow = StockUpdate & {
+  items?: { name?: string; unit?: string | null } | { name?: string; unit?: string | null }[] | null;
+};
+
+function toStockUpdate(row: HistoryRow): StockUpdate & {
+  item_name?: string | null;
+  item_unit?: string | null;
+} {
+  const item = Array.isArray(row.items) ? row.items[0] : row.items;
   return {
     id: row.id,
     shop_id: row.shop_id ?? null,
@@ -23,6 +31,8 @@ function toStockUpdate(row: StockUpdate): StockUpdate {
     updated_by: row.updated_by ?? null,
     human_confirmed: row.human_confirmed ?? null,
     created_at: row.created_at ?? null,
+    item_name: item?.name ?? null,
+    item_unit: item?.unit ?? null,
   };
 }
 
@@ -51,12 +61,12 @@ export default async function HistoryPage() {
     const { data } = await supabase
       .from("stock_updates")
       .select(
-        "id, shop_id, item_id, old_quantity, new_quantity, old_status, new_status, method, updated_by, human_confirmed, created_at",
+        "id, shop_id, item_id, old_quantity, new_quantity, old_status, new_status, method, updated_by, human_confirmed, created_at, items (name, unit)",
       )
       .eq("shop_id", shopId)
       .order("created_at", { ascending: false });
 
-    const rows = ((data ?? []) as StockUpdate[]).map(toStockUpdate);
+    const rows = ((data ?? []) as HistoryRow[]).map(toStockUpdate);
     if (rows.length > 0) {
       return <HistoryClient rows={rows} />;
     }

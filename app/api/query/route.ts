@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { items as fallbackItems, stock as fallbackStock } from "@/lib/mockData";
+import {
+  items as fallbackItems,
+  shops as fallbackShops,
+  stock as fallbackStock,
+} from "@/lib/mockData";
 import type { ExtractedIntent, Item, Stock } from "@/lib/types";
 
 type QueryBody = { query?: unknown };
 
 type QueryResult = ExtractedIntent & {
   matches: { item: Item; stock: Stock[] }[];
+  shop_matches: { id: string; name: string }[];
 };
 
 const ITEM_ALIASES: Record<string, string[]> = {
@@ -101,9 +106,26 @@ export async function POST(request: Request) {
 
   const intent = await extractWithModel(body.query, heuristicIntent(body.query));
   const matches: QueryResult["matches"] = [];
+  const shopMatches: QueryResult["shop_matches"] = [];
 
   try {
     const supabase = createClient();
+    const { data: shopRows, error: shopError } = await supabase
+      .from("shops")
+      .select("id, name, address")
+      .limit(100);
+    if (shopError) throw shopError;
+    const normalizedQuery = body.query.trim().toLowerCase();
+    shopMatches.push(
+      ...((shopRows ?? []) as { id: string; name: string; address?: string | null }[])
+        .filter(
+          (shop) =>
+            shop.name.toLowerCase().includes(normalizedQuery) ||
+            (shop.address ?? "").toLowerCase().includes(normalizedQuery),
+        )
+        .map(({ id, name }) => ({ id, name })),
+    );
+
     let itemQuery = supabase
       .from("items")
       .select("id, name, localized_names, unit");
@@ -121,6 +143,16 @@ export async function POST(request: Request) {
       matches.push({ item, stock: (stockRows ?? []) as Stock[] });
     }
   } catch {
+    const normalizedQuery = body.query.trim().toLowerCase();
+    shopMatches.push(
+      ...fallbackShops
+        .filter(
+          (shop) =>
+            shop.name.toLowerCase().includes(normalizedQuery) ||
+            (shop.address ?? "").toLowerCase().includes(normalizedQuery),
+        )
+        .map(({ id, name }) => ({ id, name })),
+    );
     const foundItems = fallbackItems.filter(
       (item) =>
         !intent.item ||
@@ -137,5 +169,18 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ...intent, matches } satisfies QueryResult);
+  if (shopMatches.length === 0) {
+    const normalizedQuery = body.query.trim().toLowerCase();
+    shopMatches.push(
+      ...fallbackShops
+        .filter(
+          (shop) =>
+            shop.name.toLowerCase().includes(normalizedQuery) ||
+            (shop.address ?? "").toLowerCase().includes(normalizedQuery),
+        )
+        .map(({ id, name }) => ({ id, name })),
+    );
+  }
+
+  return NextResponse.json({ ...intent, matches, shop_matches: shopMatches } satisfies QueryResult);
 }
