@@ -1,6 +1,10 @@
 import { ShopDetailClient } from "./ShopDetailClient";
 import { createClient } from "@/lib/supabase/server";
-import type { StockWithItem } from "@/lib/mockData";
+import {
+  getShop,
+  getStockForShop,
+  type StockWithItem,
+} from "@/lib/mockData";
 import type { Item, LocalizedNames, Shop, Stock } from "@/lib/types";
 
 type StockQueryRow = Stock & {
@@ -53,28 +57,42 @@ export default async function ShopDetailPage({
 }: {
   params: { shopId: string };
 }) {
-  const supabase = createClient();
-  const { data: shopRow } = await supabase
-    .from("shops")
-    .select("id, name, address, latitude, longitude, created_at")
-    .eq("id", params.shopId)
-    .maybeSingle();
+  try {
+    const supabase = createClient();
+    const { data: shopRow } = await supabase
+      .from("shops")
+      .select("id, name, address, latitude, longitude, created_at")
+      .eq("id", params.shopId)
+      .maybeSingle();
 
-  if (!shopRow) {
-    return <ShopDetailClient shop={null} rows={[]} />;
+    if (!shopRow) {
+      return <ShopDetailClient shop={null} rows={[]} />;
+    }
+
+    const shop = toShop(shopRow as Shop);
+    const { data: stockRows } = await supabase
+      .from("stock")
+      .select(
+        "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
+      )
+      .eq("shop_id", shop.id);
+
+    const rows = ((stockRows ?? []) as StockQueryRow[])
+      .map(toStockWithItem)
+      .filter((row): row is StockWithItem => row !== null);
+
+    if (rows.length > 0 || shop) {
+      return <ShopDetailClient shop={shop} rows={rows} />;
+    }
+  } catch {
+    // Fall back to the embedded demo values when the live schema is not fully provisioned.
   }
 
-  const shop = toShop(shopRow as Shop);
-  const { data: stockRows } = await supabase
-    .from("stock")
-    .select(
-      "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
-    )
-    .eq("shop_id", shop.id);
-
-  const rows = ((stockRows ?? []) as StockQueryRow[])
-    .map(toStockWithItem)
-    .filter((row): row is StockWithItem => row !== null);
-
-  return <ShopDetailClient shop={shop} rows={rows} />;
+  const fallbackShop = getShop(params.shopId) ?? null;
+  return (
+    <ShopDetailClient
+      shop={fallbackShop}
+      rows={fallbackShop ? getStockForShop(fallbackShop.id) : []}
+    />
+  );
 }

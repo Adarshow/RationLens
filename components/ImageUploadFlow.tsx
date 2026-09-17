@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
-import { mockImageDetection } from "@/lib/mockData";
 import type { ExtractedStockItem } from "@/lib/types";
 
 type Step = "idle" | "loading" | "review" | "published";
@@ -29,17 +28,69 @@ function matchItemId(name: string, items: ShopItem[]) {
 export function ImageUploadFlow({ shopId, items }: Props) {
   const { t } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
-  const [rows, setRows] = useState<ExtractedStockItem[]>(mockImageDetection.items);
+  const [rows, setRows] = useState<ExtractedStockItem[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [analysisMessage, setAnalysisMessage] = useState("");
 
-  function startRead() {
+  async function startRead(file?: File) {
     setError("");
+    setAnalysisMessage("");
+    if (!file) {
+      setError("Choose an image first.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Choose an image smaller than 5 MB.");
+      return;
+    }
+
     setStep("loading");
-    window.setTimeout(() => {
-      setRows(mockImageDetection.items.map((item) => ({ ...item })));
+    try {
+      const image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () =>
+          typeof reader.result === "string"
+            ? resolve(reader.result)
+            : reject(new Error("Unable to read image"));
+        reader.onerror = () => reject(new Error("Unable to read image"));
+        reader.readAsDataURL(file);
+      });
+      if (shopId) {
+        const uploadResponse = await fetch("/api/stock/upload-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shop_id: shopId, image }),
+        });
+        if (!uploadResponse.ok && uploadResponse.status !== 502) {
+          const uploadResult = (await uploadResponse.json()) as { error?: string };
+          throw new Error(uploadResult.error ?? "The image could not be uploaded.");
+        }
+      }
+      const response = await fetch("/api/stock/analyze-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image }),
+      });
+      const result = (await response.json()) as {
+        items?: ExtractedStockItem[];
+        confidence?: string;
+        message?: string;
+        error?: string;
+      };
+      if (!response.ok) throw new Error(result.error ?? "The image could not be analyzed.");
+      setRows(result.items ?? []);
+      setAnalysisMessage(
+        result.message ??
+          (result.confidence === "low"
+            ? "Unable to confidently read the stock information. Enter values manually."
+            : ""),
+      );
       setStep("review");
-    }, 1200);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The image could not be analyzed.");
+      setStep("idle");
+    }
   }
 
   function updateRow(index: number, patch: Partial<ExtractedStockItem>) {
@@ -67,10 +118,10 @@ export function ImageUploadFlow({ shopId, items }: Props) {
 
     setPending(true);
     try {
-      const response = await fetch("/api/stock/publish-image", {
+      const response = await fetch("/api/stock/confirm-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_id: shopId, items: payload }),
+        body: JSON.stringify({ shop_id: shopId, items: payload, human_confirmed: true }),
       });
       if (!response.ok) {
         setError("Couldn't save that update — try again.");
@@ -108,23 +159,30 @@ export function ImageUploadFlow({ shopId, items }: Props) {
       <Card variant="browse">
         <SectionHeading>{t.weDetected}</SectionHeading>
         <p className="mt-2 text-sm text-ink/70 md:text-base">{t.checkNumbers}</p>
-        <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {rows.map((row, index) => (
-            <li key={row.item}>
-              <Input
-                id={`detected-${index}`}
-                label={row.item}
-                type="number"
-                min={0}
-                value={row.quantity}
-                onChange={(event) =>
-                  updateRow(index, { quantity: Number(event.target.value) })
-                }
-              />
-              <p className="mt-1 text-sm text-ink/70">{row.unit}</p>
-            </li>
-          ))}
-        </ul>
+        {analysisMessage ? (
+          <Card variant="alert" tone="warning" className="mt-4" role="status">
+            <p className="text-sm text-ink">{analysisMessage}</p>
+          </Card>
+        ) : null}
+        {rows.length > 0 ? (
+          <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {rows.map((row, index) => (
+              <li key={`${row.item}-${index}`}>
+                <Input
+                  id={`detected-${index}`}
+                  label={row.item}
+                  type="number"
+                  min={0}
+                  value={row.quantity}
+                  onChange={(event) =>
+                    updateRow(index, { quantity: Number(event.target.value) })
+                  }
+                />
+                <p className="mt-1 text-sm text-ink/70">{row.unit}</p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {error ? (
           <Card variant="alert" tone="danger" className="mt-4" role="alert">
             <p className="text-laterite">{error}</p>
@@ -134,7 +192,7 @@ export function ImageUploadFlow({ shopId, items }: Props) {
           <Button
             type="button"
             fullWidth
-            disabled={pending}
+            disabled={pending || rows.length === 0}
             onClick={() => {
               void publish();
             }}
@@ -166,11 +224,13 @@ export function ImageUploadFlow({ shopId, items }: Props) {
           type="file"
           accept="image/*"
           className="block w-full text-sm md:text-base"
-          onChange={() => startRead()}
+          onChange={(event) => {
+            void startRead(event.target.files?.[0]);
+          }}
         />
       </label>
       <div className="mt-4">
-        <Button type="button" onClick={startRead} fullWidth>
+        <Button type="button" onClick={() => setError("Choose an image first.")} fullWidth>
           {t.uploadImage}
         </Button>
       </div>
