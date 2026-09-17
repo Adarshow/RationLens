@@ -11,12 +11,30 @@ import type { ExtractedStockItem } from "@/lib/types";
 
 type Step = "idle" | "loading" | "review" | "published";
 
-export function ImageUploadFlow() {
+type ShopItem = {
+  id: string;
+  name: string;
+};
+
+type Props = {
+  shopId: string | null;
+  items: ShopItem[];
+};
+
+function matchItemId(name: string, items: ShopItem[]) {
+  const key = name.trim().toLowerCase();
+  return items.find((item) => item.name.trim().toLowerCase() === key)?.id;
+}
+
+export function ImageUploadFlow({ shopId, items }: Props) {
   const { t } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [rows, setRows] = useState<ExtractedStockItem[]>(mockImageDetection.items);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
 
   function startRead() {
+    setError("");
     setStep("loading");
     window.setTimeout(() => {
       setRows(mockImageDetection.items.map((item) => ({ ...item })));
@@ -28,6 +46,42 @@ export function ImageUploadFlow() {
     setRows((current) =>
       current.map((row, i) => (i === index ? { ...row, ...patch } : row)),
     );
+  }
+
+  async function publish() {
+    setError("");
+    if (!shopId) {
+      setError("Couldn't save that update — try again.");
+      return;
+    }
+
+    const payload = [];
+    for (const row of rows) {
+      const itemId = matchItemId(row.item, items);
+      if (!itemId) {
+        setError("Couldn't save that update — try again.");
+        return;
+      }
+      payload.push({ item_id: itemId, quantity: row.quantity });
+    }
+
+    setPending(true);
+    try {
+      const response = await fetch("/api/stock/publish-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_id: shopId, items: payload }),
+      });
+      if (!response.ok) {
+        setError("Couldn't save that update — try again.");
+        return;
+      }
+      setStep("published");
+    } catch {
+      setError("Couldn't save that update — try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   if (step === "published") {
@@ -71,17 +125,28 @@ export function ImageUploadFlow() {
             </li>
           ))}
         </ul>
+        {error ? (
+          <Card variant="alert" tone="danger" className="mt-4" role="alert">
+            <p className="text-laterite">{error}</p>
+          </Card>
+        ) : null}
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <Button
             type="button"
             fullWidth
+            disabled={pending}
             onClick={() => {
-              setStep("published");
+              void publish();
             }}
           >
             {t.confirmPublish}
           </Button>
-          <Button type="button" variant="secondary" onClick={() => setStep("idle")}>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            onClick={() => setStep("idle")}
+          >
             {t.retake}
           </Button>
           <Button href="/shopkeeper" variant="ghost">

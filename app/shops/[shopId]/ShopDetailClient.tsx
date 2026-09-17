@@ -58,8 +58,9 @@ export function ShopDetailClient({ shop, rows }: Props) {
               columns={2}
               rows={rows}
               action={(row) =>
-                row.status === "out_of_stock" || row.status === "low_stock" ? (
-                  <NotifyButton />
+                (row.status === "out_of_stock" || row.status === "low_stock") &&
+                row.item_id ? (
+                  <NotifyButton shopId={shop.id} itemId={row.item_id} />
                 ) : null
               }
             />

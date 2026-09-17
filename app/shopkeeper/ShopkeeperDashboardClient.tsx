@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StockTable } from "@/components/StockTable";
 import { UpdateForm } from "@/components/UpdateForm";
 import { Button } from "@/components/ui/Button";
@@ -13,11 +14,29 @@ import type { StockWithItem } from "@/lib/mockData";
 type Props = {
   shopName: string | null;
   rows: StockWithItem[];
+  pendingRequestCount?: number;
+  initialItemId?: string;
 };
 
-export function ShopkeeperDashboardClient({ shopName, rows }: Props) {
+function initialSelected(rows: StockWithItem[], itemId?: string) {
+  if (itemId) {
+    const match = rows.find((row) => row.item_id === itemId);
+    if (match) return match.id;
+  }
+  return rows[0]?.id ?? "";
+}
+
+export function ShopkeeperDashboardClient({
+  shopName,
+  rows,
+  pendingRequestCount = 0,
+  initialItemId,
+}: Props) {
   const { t } = useLanguage();
-  const [selectedId, setSelectedId] = useState(rows[0]?.id ?? "");
+  const router = useRouter();
+  const [selectedId, setSelectedId] = useState(() =>
+    initialSelected(rows, initialItemId),
+  );
   const [toast, setToast] = useState(false);
   const selected = rows.find((row) => row.id === selectedId) ?? rows[0];
 
@@ -29,6 +48,10 @@ export function ShopkeeperDashboardClient({ shopName, rows }: Props) {
           <Button href="/shopkeeper/upload">{t.updatePhoto}</Button>
           <Button href="/shopkeeper/history" variant="secondary">
             {t.history}
+          </Button>
+          <Button href="/shopkeeper/requests" variant="secondary">
+            {t.viewRequests}
+            {pendingRequestCount > 0 ? ` (${pendingRequestCount})` : ""}
           </Button>
         </div>
       </div>
@@ -63,6 +86,7 @@ export function ShopkeeperDashboardClient({ shopName, rows }: Props) {
             row={selected}
             onSaved={() => {
               setToast(true);
+              router.refresh();
               window.setTimeout(() => setToast(false), 2500);
             }}
           />

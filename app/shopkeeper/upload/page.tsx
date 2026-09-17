@@ -1,25 +1,46 @@
-"use client";
+import { redirect } from "next/navigation";
+import { UploadClient } from "./UploadClient";
+import { createClient } from "@/lib/supabase/server";
 
-import { ImageUploadFlow } from "@/components/ImageUploadFlow";
-import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
-import { TextLink } from "@/components/TextLink";
-import { useLanguage } from "@/components/LanguageProvider";
+type ItemRow = {
+  id: string;
+  name: string;
+};
 
-export default function UploadPage() {
-  const { t } = useLanguage();
+export default async function UploadPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return (
-    <PageContainer>
-      <div className="mx-auto w-full max-w-3xl">
-        <TextLink href="/shopkeeper">{t.back}</TextLink>
-        <div className="mt-3">
-          <PageTitle>{t.updatePhoto}</PageTitle>
-        </div>
-        <p className="mt-3 text-sm text-ink/70 md:text-base">{t.checkNumbers}</p>
-        <div className="mt-6">
-          <ImageUploadFlow />
-        </div>
-      </div>
-    </PageContainer>
-  );
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("shop_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const shopId = (profile?.shop_id as string | null | undefined) ?? null;
+  if (!shopId) {
+    return <UploadClient shopId={null} items={[]} />;
+  }
+
+  const { data: stockRows } = await supabase
+    .from("stock")
+    .select("items (id, name)")
+    .eq("shop_id", shopId);
+
+  const items: ItemRow[] = [];
+  for (const row of stockRows ?? []) {
+    const raw = (row as { items?: ItemRow | ItemRow[] | null }).items;
+    const item = Array.isArray(raw) ? raw[0] : raw;
+    if (!item?.id || !item.name) continue;
+    if (items.some((existing) => existing.id === item.id)) continue;
+    items.push({ id: item.id, name: item.name });
+  }
+
+  return <UploadClient shopId={shopId} items={items} />;
 }

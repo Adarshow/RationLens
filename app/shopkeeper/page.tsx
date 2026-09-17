@@ -38,7 +38,11 @@ function toStockWithItem(row: StockQueryRow): StockWithItem | null {
   };
 }
 
-export default async function ShopkeeperDashboardPage() {
+export default async function ShopkeeperDashboardPage({
+  searchParams,
+}: {
+  searchParams: { item?: string };
+}) {
   const supabase = createClient();
   const {
     data: { user },
@@ -59,24 +63,38 @@ export default async function ShopkeeperDashboardPage() {
     return <ShopkeeperDashboardClient shopName={null} rows={[]} />;
   }
 
-  const [{ data: shop }, { data: stockRows }] = await Promise.all([
-    supabase.from("shops").select("name").eq("id", shopId).maybeSingle(),
-    supabase
-      .from("stock")
-      .select(
-        "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
-      )
-      .eq("shop_id", shopId),
-  ]);
+  const [{ data: shop }, { data: stockRows }, { data: alertRows }] =
+    await Promise.all([
+      supabase.from("shops").select("name").eq("id", shopId).maybeSingle(),
+      supabase
+        .from("stock")
+        .select(
+          "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
+        )
+        .eq("shop_id", shopId),
+      supabase
+        .from("alerts")
+        .select("item_id")
+        .eq("shop_id", shopId)
+        .eq("status", "active"),
+    ]);
 
   const rows = ((stockRows ?? []) as StockQueryRow[])
     .map(toStockWithItem)
     .filter((row): row is StockWithItem => row !== null);
 
+  const pendingRequestCount = new Set(
+    (alertRows ?? [])
+      .map((row) => row.item_id as string | null)
+      .filter((id): id is string => Boolean(id)),
+  ).size;
+
   return (
     <ShopkeeperDashboardClient
       shopName={(shop?.name as string | undefined) ?? null}
       rows={rows}
+      pendingRequestCount={pendingRequestCount}
+      initialItemId={searchParams.item}
     />
   );
 }
