@@ -1,149 +1,69 @@
-"use client";
+import { DashboardClient } from "./DashboardClient";
+import { createClient } from "@/lib/supabase/server";
+import type { StockWithItem } from "@/lib/mockData";
+import type { Item, LocalizedNames, Shop, Stock } from "@/lib/types";
 
-import { FormEvent, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
-import { ShopCard } from "@/components/ShopCard";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import {
-  CardGrid,
-  PageContainer,
-  PageTitle,
-} from "@/components/ui/PageContainer";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { useLanguage } from "@/components/LanguageProvider";
-import { getStockForShop, shops, shopDistanceKm } from "@/lib/mockData";
-import {
-  resolveUserLocation,
-  useUserLocation,
-} from "@/lib/useUserLocation";
+type StockQueryRow = Stock & {
+  items: Item | Item[] | null;
+};
 
-const ShopMap = dynamic(() => import("@/components/ShopMap"), { ssr: false });
+function toItem(raw: Item | Item[] | null): Item | null {
+  const row = Array.isArray(raw) ? raw[0] : raw;
+  if (!row?.id || !row.name) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    localized_names: (row.localized_names ?? {}) as LocalizedNames,
+    unit: row.unit ?? null,
+  };
+}
 
-export default function DashboardPage() {
-  const { t } = useLanguage();
-  const [query, setQuery] = useState("");
-  const [showChip, setShowChip] = useState(false);
-  const [view, setView] = useState<"list" | "map">("list");
-  const [noteDismissed, setNoteDismissed] = useState(false);
-  const { location, status, refresh } = useUserLocation();
-  const activeLocation = resolveUserLocation(status, location);
+function toShop(row: Shop): Shop {
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address ?? null,
+    latitude: Number(row.latitude),
+    longitude: Number(row.longitude),
+    created_at: row.created_at ?? null,
+  };
+}
 
-  const sorted = useMemo(
-    () =>
-      [...shops].sort(
-        (a, b) =>
-          shopDistanceKm(a, activeLocation) - shopDistanceKm(b, activeLocation),
-      ),
-    [activeLocation],
-  );
+export default async function DashboardPage() {
+  const supabase = createClient();
+  const [{ data: shopRows }, { data: stockRows }] = await Promise.all([
+    supabase
+      .from("shops")
+      .select("id, name, address, latitude, longitude, created_at"),
+    supabase.from("stock").select(
+      "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
+    ),
+  ]);
 
-  function onSearch(event: FormEvent) {
-    event.preventDefault();
-    setShowChip(true);
+  const shops = ((shopRows ?? []) as Shop[]).map(toShop);
+  const stockByShop: Record<string, StockWithItem[]> = {};
+
+  for (const row of (stockRows ?? []) as StockQueryRow[]) {
+    const item = toItem(row.items);
+    if (!item || !row.shop_id) continue;
+    const stockRow: StockWithItem = {
+      id: row.id,
+      shop_id: row.shop_id,
+      item_id: row.item_id,
+      quantity:
+        row.quantity === null || row.quantity === undefined
+          ? null
+          : Number(row.quantity),
+      status: row.status,
+      last_updated_at: row.last_updated_at,
+      verification_status: row.verification_status,
+      updated_by: row.updated_by,
+      item,
+    };
+    const list = stockByShop[row.shop_id] ?? [];
+    list.push(stockRow);
+    stockByShop[row.shop_id] = list;
   }
 
-  const locationNote =
-    status === "loading" ? (
-      <p className="text-sm text-ink/70">{t.findingLocation}</p>
-    ) : !noteDismissed &&
-      (status === "denied" || status === "unsupported") ? (
-      <p className="text-sm text-ink/70">
-        {t.approximateLocation}{" "}
-        <button
-          type="button"
-          className="font-semibold text-monsoon underline-offset-2 hover:underline"
-          onClick={() => {
-            setNoteDismissed(false);
-            refresh();
-          }}
-        >
-          {t.tryAgain}
-        </button>
-        {" · "}
-        <button
-          type="button"
-          className="font-semibold text-ink/70 underline-offset-2 hover:underline"
-          onClick={() => setNoteDismissed(true)}
-        >
-          {t.dismiss}
-        </button>
-      </p>
-    ) : null;
-
-  const filters = (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-      <form onSubmit={onSearch} className="flex flex-col gap-3">
-        <Input
-          id="query"
-          label={t.search}
-          placeholder={t.searchPlaceholder}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        {locationNote}
-        <Button type="submit" fullWidth>
-          {t.search}
-        </Button>
-      </form>
-      {showChip ? (
-        <Card variant="browse">
-          <p className="font-medium text-ink">{t.understood}</p>
-        </Card>
-      ) : null}
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          type="button"
-          fullWidth
-          variant={view === "list" ? "primary" : "secondary"}
-          onClick={() => setView("list")}
-        >
-          {t.list}
-        </Button>
-        <Button
-          type="button"
-          fullWidth
-          variant={view === "map" ? "primary" : "secondary"}
-          onClick={() => setView("map")}
-        >
-          {t.map}
-        </Button>
-      </div>
-    </aside>
-  );
-
-  return (
-    <PageContainer>
-      <PageTitle>{t.nearbyShops}</PageTitle>
-      <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,20rem)_1fr] lg:items-start lg:gap-8">
-        {filters}
-        <div>
-          <SectionHeading>
-            {view === "map" ? t.map : t.list}
-          </SectionHeading>
-          <div className="mt-3">
-            {view === "map" ? (
-              <ShopMap
-                shops={sorted}
-                userLocation={activeLocation}
-                showUserMarker={status === "granted"}
-              />
-            ) : (
-              <CardGrid>
-                {sorted.map((shop) => (
-                  <ShopCard
-                    key={shop.id}
-                    shop={shop}
-                    stockRows={getStockForShop(shop.id)}
-                    userLocation={activeLocation}
-                  />
-                ))}
-              </CardGrid>
-            )}
-          </div>
-        </div>
-      </div>
-    </PageContainer>
-  );
+  return <DashboardClient shops={shops} stockByShop={stockByShop} />;
 }

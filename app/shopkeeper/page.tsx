@@ -1,74 +1,82 @@
-"use client";
+import { redirect } from "next/navigation";
+import { ShopkeeperDashboardClient } from "./ShopkeeperDashboardClient";
+import { createClient } from "@/lib/supabase/server";
+import type { StockWithItem } from "@/lib/mockData";
+import type { Item, LocalizedNames, Stock } from "@/lib/types";
 
-import { useState } from "react";
-import { StockTable } from "@/components/StockTable";
-import { UpdateForm } from "@/components/UpdateForm";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { useLanguage } from "@/components/LanguageProvider";
-import {
-  SHOPKEEPER_SHOP_ID,
-  getShop,
-  getStockForShop,
-} from "@/lib/mockData";
+type StockQueryRow = Stock & {
+  items: Item | Item[] | null;
+};
 
-export default function ShopkeeperDashboardPage() {
-  const { t } = useLanguage();
-  const shop = getShop(SHOPKEEPER_SHOP_ID);
-  const rows = getStockForShop(SHOPKEEPER_SHOP_ID);
-  const [selectedId, setSelectedId] = useState(rows[0]?.id ?? "");
-  const [toast, setToast] = useState(false);
-  const selected = rows.find((row) => row.id === selectedId) ?? rows[0];
+function toItem(raw: Item | Item[] | null): Item | null {
+  const row = Array.isArray(raw) ? raw[0] : raw;
+  if (!row?.id || !row.name) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    localized_names: (row.localized_names ?? {}) as LocalizedNames,
+    unit: row.unit ?? null,
+  };
+}
+
+function toStockWithItem(row: StockQueryRow): StockWithItem | null {
+  const item = toItem(row.items);
+  if (!item || !row.shop_id) return null;
+  return {
+    id: row.id,
+    shop_id: row.shop_id,
+    item_id: row.item_id,
+    quantity:
+      row.quantity === null || row.quantity === undefined
+        ? null
+        : Number(row.quantity),
+    status: row.status,
+    last_updated_at: row.last_updated_at,
+    verification_status: row.verification_status,
+    updated_by: row.updated_by,
+    item,
+  };
+}
+
+export default async function ShopkeeperDashboardPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("shop_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const shopId = profile?.shop_id as string | null | undefined;
+  if (!shopId) {
+    return <ShopkeeperDashboardClient shopName={null} rows={[]} />;
+  }
+
+  const [{ data: shop }, { data: stockRows }] = await Promise.all([
+    supabase.from("shops").select("name").eq("id", shopId).maybeSingle(),
+    supabase
+      .from("stock")
+      .select(
+        "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
+      )
+      .eq("shop_id", shopId),
+  ]);
+
+  const rows = ((stockRows ?? []) as StockQueryRow[])
+    .map(toStockWithItem)
+    .filter((row): row is StockWithItem => row !== null);
 
   return (
-    <PageContainer>
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <PageTitle>{shop?.name ?? t.shopkeeper}</PageTitle>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button href="/shopkeeper/upload">{t.updatePhoto}</Button>
-          <Button href="/shopkeeper/history" variant="secondary">
-            {t.history}
-          </Button>
-        </div>
-      </div>
-      {toast ? (
-        <Card variant="alert" tone="success" className="mt-6" role="status">
-          <p>{t.saved}</p>
-        </Card>
-      ) : null}
-      <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_minmax(18rem,24rem)] lg:items-start lg:gap-8">
-        <div>
-          <SectionHeading>{t.stockSection}</SectionHeading>
-          <div className="mt-3">
-            <StockTable
-              columns={2}
-              rows={rows}
-              action={(row) => (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  fullWidth
-                  onClick={() => setSelectedId(row.id)}
-                >
-                  {t.manualUpdate}
-                </Button>
-              )}
-            />
-          </div>
-        </div>
-        {selected ? (
-          <UpdateForm
-            key={selected.id}
-            row={selected}
-            onSaved={() => {
-              setToast(true);
-              window.setTimeout(() => setToast(false), 2500);
-            }}
-          />
-        ) : null}
-      </div>
-    </PageContainer>
+    <ShopkeeperDashboardClient
+      shopName={(shop?.name as string | undefined) ?? null}
+      rows={rows}
+    />
   );
 }

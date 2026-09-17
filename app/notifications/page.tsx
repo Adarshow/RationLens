@@ -1,57 +1,33 @@
-"use client";
+import { NotificationsClient } from "./NotificationsClient";
+import { createClient } from "@/lib/supabase/server";
+import type { Notification } from "@/lib/types";
 
-import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import {
-  CardGrid,
-  PageContainer,
-  PageTitle,
-} from "@/components/ui/PageContainer";
-import { TextLink } from "@/components/TextLink";
-import { useLanguage } from "@/components/LanguageProvider";
-import { notifications as sampleNotifications } from "@/lib/mockData";
+function toNotification(row: Notification): Notification {
+  return {
+    id: row.id,
+    user_id: row.user_id ?? null,
+    message: row.message ?? null,
+    read: row.read ?? null,
+    created_at: row.created_at ?? null,
+  };
+}
 
-export default function NotificationsPage() {
-  const { t } = useLanguage();
-  const [empty, setEmpty] = useState(false);
-  const rows = empty ? [] : sampleNotifications;
+export default async function NotificationsPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return (
-    <PageContainer>
-      <TextLink href="/dashboard">{t.back}</TextLink>
-      <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <PageTitle>{t.notifications}</PageTitle>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setEmpty((value) => !value)}
-        >
-          {empty ? t.showList : t.showEmpty}
-        </Button>
-      </div>
-      {rows.length === 0 ? (
-        <Card variant="browse" className="mt-6">
-          <EmptyState title={t.noNotifications} body={t.noNotificationsBody} />
-        </Card>
-      ) : (
-        <CardGrid className="mt-6">
-          {rows.map((row) => (
-            <Card key={row.id} as="article" variant="browse">
-              <p className="text-sm md:text-base">{row.message}</p>
-              <p className="mt-2 text-sm text-ink/70 md:text-base">
-                {row.created_at
-                  ? formatDistanceToNow(new Date(row.created_at), {
-                      addSuffix: true,
-                    })
-                  : ""}
-              </p>
-            </Card>
-          ))}
-        </CardGrid>
-      )}
-    </PageContainer>
-  );
+  if (!user) {
+    return <NotificationsClient rows={[]} />;
+  }
+
+  const { data } = await supabase
+    .from("notifications")
+    .select("id, user_id, message, read, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const rows = ((data ?? []) as Notification[]).map(toNotification);
+  return <NotificationsClient rows={rows} />;
 }

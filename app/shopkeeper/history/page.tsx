@@ -1,32 +1,59 @@
-"use client";
+import { redirect } from "next/navigation";
+import { HistoryClient } from "./HistoryClient";
+import { createClient } from "@/lib/supabase/server";
+import type { StockStatus, StockUpdate } from "@/lib/types";
 
-import { AuditLogTable } from "@/components/AuditLogTable";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Card } from "@/components/ui/Card";
-import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
-import { TextLink } from "@/components/TextLink";
-import { useLanguage } from "@/components/LanguageProvider";
-import { SHOPKEEPER_SHOP_ID, stockUpdates } from "@/lib/mockData";
+function toStockUpdate(row: StockUpdate): StockUpdate {
+  return {
+    id: row.id,
+    shop_id: row.shop_id ?? null,
+    item_id: row.item_id ?? null,
+    old_quantity:
+      row.old_quantity === null || row.old_quantity === undefined
+        ? null
+        : Number(row.old_quantity),
+    new_quantity:
+      row.new_quantity === null || row.new_quantity === undefined
+        ? null
+        : Number(row.new_quantity),
+    old_status: (row.old_status ?? null) as StockStatus | null,
+    new_status: (row.new_status ?? null) as StockStatus | null,
+    method: row.method ?? null,
+    updated_by: row.updated_by ?? null,
+    human_confirmed: row.human_confirmed ?? null,
+    created_at: row.created_at ?? null,
+  };
+}
 
-export default function HistoryPage() {
-  const { t } = useLanguage();
-  const rows = stockUpdates.filter((row) => row.shop_id === SHOPKEEPER_SHOP_ID);
+export default async function HistoryPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return (
-    <PageContainer>
-      <TextLink href="/shopkeeper">{t.back}</TextLink>
-      <div className="mt-3">
-        <PageTitle>{t.history}</PageTitle>
-      </div>
-      <div className="mt-6">
-        {rows.length === 0 ? (
-          <Card variant="browse">
-            <EmptyState title={t.noHistory} />
-          </Card>
-        ) : (
-          <AuditLogTable rows={rows} />
-        )}
-      </div>
-    </PageContainer>
-  );
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("shop_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const shopId = profile?.shop_id as string | null | undefined;
+  if (!shopId) {
+    return <HistoryClient rows={[]} />;
+  }
+
+  const { data } = await supabase
+    .from("stock_updates")
+    .select(
+      "id, shop_id, item_id, old_quantity, new_quantity, old_status, new_status, method, updated_by, human_confirmed, created_at",
+    )
+    .eq("shop_id", shopId)
+    .order("created_at", { ascending: false });
+
+  const rows = ((data ?? []) as StockUpdate[]).map(toStockUpdate);
+  return <HistoryClient rows={rows} />;
 }
