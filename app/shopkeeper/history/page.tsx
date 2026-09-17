@@ -2,6 +2,7 @@
 
 import { AuditLogTable } from "@/components/AuditLogTable";
 import { PageShell } from "@/components/PageShell";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SHOPKEEPER_SHOP_ID, stockUpdates } from "@/lib/mockData";
@@ -13,9 +14,13 @@ export default function HistoryPage() {
   return (
     <PageShell>
       <TextLink href="/shopkeeper">{t.back}</TextLink>
-      <h1 className="mt-3 font-serif text-title">{t.history}</h1>
+      <h1 className="mt-3 text-title font-extrabold text-ink">{t.history}</h1>
       <div className="mt-6">
-        <AuditLogTable rows={rows} />
+        {rows.length === 0 ? (
+          <EmptyState title={t.noHistory} />
+        ) : (
+          <AuditLogTable rows={rows} />
+        )}
       </div>
     </PageShell>
   );

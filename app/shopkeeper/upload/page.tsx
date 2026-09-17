@@ -11,8 +11,10 @@ export default function UploadPage() {
   return (
     <PageShell>
       <TextLink href="/shopkeeper">{t.back}</TextLink>
-      <h1 className="mt-3 font-serif text-title">{t.updatePhoto}</h1>
-      <p className="mt-3 text-body text-muted">{t.checkNumbers}</p>
+      <h1 className="mt-3 text-title font-extrabold text-ink">
+        {t.updatePhoto}
+      </h1>
+      <p className="mt-3 text-body text-ink/70">{t.checkNumbers}</p>
       <div className="mt-6">
         <ImageUploadFlow />
       </div>

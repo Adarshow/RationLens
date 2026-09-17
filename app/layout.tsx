@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Noto_Sans, Noto_Sans_Malayalam, Noto_Serif } from "next/font/google";
+import { Manrope, Noto_Sans_Malayalam } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
-import { TopBar } from "@/components/TopBar";
+import { Nav } from "@/components/Nav";
 
-const notoSans = Noto_Sans({
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -15,13 +15,6 @@ const notoMalayalam = Noto_Sans_Malayalam({
   subsets: ["malayalam"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-ml",
-  display: "swap",
-});
-
-const notoSerif = Noto_Serif({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-serif",
   display: "swap",
 });
 
@@ -38,11 +31,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${notoSans.variable} ${notoMalayalam.variable} ${notoSerif.variable}`}
+      className={`${manrope.variable} ${notoMalayalam.variable}`}
     >
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <LanguageProvider>
-          <TopBar />
+          <Nav />
           {children}
         </LanguageProvider>
       </body>

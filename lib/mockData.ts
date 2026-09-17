@@ -276,7 +276,7 @@ export function sourceLabel(status: VerificationStatus | null): string {
 
 export function statusWord(status: StockStatus | null): string {
   if (status === "available") return "Available";
-  if (status === "low_stock") return "Low Stock";
-  if (status === "out_of_stock") return "Out of Stock";
-  return "Info may be outdated";
+  if (status === "low_stock") return "Limited";
+  if (status === "out_of_stock") return "Unavailable";
+  return "Pending";
 }

@@ -3,12 +3,12 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { Button } from "@/components/ui/Button";
+import { Input, Select } from "@/components/ui/Input";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { shops } from "@/lib/mockData";
 import type { UserRole } from "@/lib/types";
-import { fieldClassName } from "@/lib/ui";
 
 export default function SignupPage() {
   const { t } = useLanguage();
@@ -21,7 +21,6 @@ export default function SignupPage() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    // TODO: replace with real Supabase query
     if (role === "shopkeeper") {
       router.push("/shopkeeper");
       return;
@@ -31,42 +30,33 @@ export default function SignupPage() {
 
   return (
     <PageShell>
-      <h1 className="font-serif text-title">{t.signup}</h1>
-      <form className="mt-6" onSubmit={onSubmit}>
-        <label className="font-semibold" htmlFor="name">
-          {t.name}
-        </label>
-        <input
+      <h1 className="text-title font-extrabold text-ink">{t.signup}</h1>
+      <form className="mt-6 flex flex-col gap-4" onSubmit={onSubmit}>
+        <Input
           id="name"
-          className={`mt-2 ${fieldClassName}`}
+          label={t.name}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
         />
-        <label className="mt-4 block font-semibold" htmlFor="email">
-          {t.email}
-        </label>
-        <input
+        <Input
           id="email"
+          label={t.email}
           type="email"
-          className={`mt-2 ${fieldClassName}`}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
         />
-        <label className="mt-4 block font-semibold" htmlFor="password">
-          {t.password}
-        </label>
-        <input
+        <Input
           id="password"
+          label={t.password}
           type="password"
-          className={`mt-2 ${fieldClassName}`}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           required
         />
-        <fieldset className="mt-4">
-          <legend className="font-semibold">{t.role}</legend>
+        <fieldset>
+          <legend className="text-sm font-semibold text-ink">{t.role}</legend>
           <label className="mt-2 flex min-h-tap items-center gap-2 text-body">
             <input
               type="radio"
@@ -87,27 +77,20 @@ export default function SignupPage() {
           </label>
         </fieldset>
         {role === "shopkeeper" ? (
-          <>
-            <label className="mt-4 block font-semibold" htmlFor="shop">
-              {t.assignedShop}
-            </label>
-            <select
-              id="shop"
-              className={`mt-2 ${fieldClassName}`}
-              value={shopId}
-              onChange={(event) => setShopId(event.target.value)}
-            >
-              {shops.map((shop) => (
-                <option key={shop.id} value={shop.id}>
-                  {shop.name}
-                </option>
-              ))}
-            </select>
-          </>
+          <Select
+            id="shop"
+            label={t.assignedShop}
+            value={shopId}
+            onChange={(event) => setShopId(event.target.value)}
+          >
+            {shops.map((shop) => (
+              <option key={shop.id} value={shop.id}>
+                {shop.name}
+              </option>
+            ))}
+          </Select>
         ) : null}
-        <div className="mt-6">
-          <PrimaryButton type="submit">{t.signup}</PrimaryButton>
-        </div>
+        <Button type="submit">{t.signup}</Button>
       </form>
       <p className="mt-6">
         <TextLink href="/login">{t.login}</TextLink>

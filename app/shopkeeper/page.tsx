@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { StockTable } from "@/components/StockTable";
 import { UpdateForm } from "@/components/UpdateForm";
 import { PageShell } from "@/components/PageShell";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { SecondaryButton } from "@/components/SecondaryButton";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   SHOPKEEPER_SHOP_ID,
@@ -24,32 +24,36 @@ export default function ShopkeeperDashboardPage() {
 
   return (
     <PageShell>
-      <h1 className="font-serif text-title">{shop?.name ?? t.shopkeeper}</h1>
+      <h1 className="text-title font-extrabold text-ink">
+        {shop?.name ?? t.shopkeeper}
+      </h1>
       <div className="mt-6 flex flex-col gap-3">
-        <Link href="/shopkeeper/upload">
-          <PrimaryButton type="button">{t.updatePhoto}</PrimaryButton>
-        </Link>
-        <Link href="/shopkeeper/history">
-          <SecondaryButton type="button">{t.history}</SecondaryButton>
-        </Link>
+        <Button href="/shopkeeper/upload">{t.updatePhoto}</Button>
+        <Button href="/shopkeeper/history" variant="secondary">
+          {t.history}
+        </Button>
       </div>
       {toast ? (
-        <p
-          className="mt-6 border border-available bg-available-bg p-4 text-available"
-          role="status"
-        >
-          {t.saved}
-        </p>
+        <Card variant="alert" tone="success" className="mt-6" role="status">
+          <p>{t.saved}</p>
+        </Card>
       ) : null}
       <div className="mt-6">
-        <StockTable
-          rows={rows}
-          action={(row) => (
-            <SecondaryButton type="button" onClick={() => setSelectedId(row.id)}>
-              {t.manualUpdate}
-            </SecondaryButton>
-          )}
-        />
+        <SectionHeading>{t.stockSection}</SectionHeading>
+        <div className="mt-3">
+          <StockTable
+            rows={rows}
+            action={(row) => (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setSelectedId(row.id)}
+              >
+                {t.manualUpdate}
+              </Button>
+            )}
+          />
+        </div>
       </div>
       {selected ? (
         <UpdateForm

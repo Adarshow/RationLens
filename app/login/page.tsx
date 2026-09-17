@@ -3,11 +3,12 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { TEST_LOGINS } from "@/lib/mockData";
-import { fieldClassName } from "@/lib/ui";
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -18,7 +19,6 @@ export default function LoginPage() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    // TODO: replace with real Supabase query
     const citizen =
       email === TEST_LOGINS.citizen.email &&
       password === TEST_LOGINS.citizen.password;
@@ -39,41 +39,35 @@ export default function LoginPage() {
 
   return (
     <PageShell>
-      <h1 className="font-serif text-title">{t.login}</h1>
-      <p className="mt-3 text-body text-muted">{t.demoHint}</p>
-      <form className="mt-6" onSubmit={onSubmit}>
-        <label className="font-semibold" htmlFor="email">
-          {t.email}
-        </label>
-        <input
+      <h1 className="text-title font-extrabold text-ink">{t.login}</h1>
+      <p className="mt-3 text-body text-ink/70">{t.demoHint}</p>
+      <form className="mt-6 flex flex-col gap-4" onSubmit={onSubmit}>
+        <Input
           id="email"
+          label={t.email}
           type="email"
-          className={`mt-2 ${fieldClassName}`}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoComplete="username"
           required
+          invalid={Boolean(error)}
         />
-        <label className="mt-4 block font-semibold" htmlFor="password">
-          {t.password}
-        </label>
-        <input
+        <Input
           id="password"
+          label={t.password}
           type="password"
-          className={`mt-2 ${fieldClassName}`}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           autoComplete="current-password"
           required
+          invalid={Boolean(error)}
         />
         {error ? (
-          <p className="mt-4 border border-out bg-out-bg p-4 text-out" role="alert">
-            {error}
-          </p>
+          <Card variant="alert" tone="danger" role="alert">
+            <p className="text-laterite">{error}</p>
+          </Card>
         ) : null}
-        <div className="mt-6">
-          <PrimaryButton type="submit">{t.login}</PrimaryButton>
-        </div>
+        <Button type="submit">{t.login}</Button>
       </form>
       <p className="mt-6">
         <TextLink href="/signup">{t.signup}</TextLink>

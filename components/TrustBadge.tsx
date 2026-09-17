@@ -17,9 +17,9 @@ export function TrustBadge({ lastUpdatedAt, verificationStatus }: Props) {
     verificationStatus === "ai_assisted";
 
   return (
-    <p className="text-body text-muted">
+    <p className="text-body text-ink/70">
       Updated {when} · Source: {source}
-      {verified ? " · ✓ Verified" : ""}
+      {verified ? " · Verified" : ""}
     </p>
   );
 }

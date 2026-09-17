@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { SecondaryButton } from "@/components/SecondaryButton";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { StockWithItem } from "@/lib/mockData";
 import type { StockStatus } from "@/lib/types";
-import { fieldClassName } from "@/lib/ui";
 
 type Props = {
   row: StockWithItem;
@@ -26,63 +27,62 @@ export function UpdateForm({ row, onSaved }: Props) {
   }
 
   return (
-    <form
-      className="mt-6 border border-line bg-paper p-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        // TODO: replace with real Supabase query
-        onSaved();
-      }}
-    >
-      <p className="font-semibold">{t.manualUpdate}</p>
+    <Card as="form" variant="browse" className="mt-6" onSubmit={(event) => {
+      event.preventDefault();
+      onSaved();
+    }}>
+      <SectionHeading>{t.manualUpdate}</SectionHeading>
       <div className="mt-3 grid grid-cols-1 gap-2">
         {(
           [
             ["available", "Available"],
-            ["low_stock", "Low Stock"],
-            ["out_of_stock", "Out of Stock"],
+            ["low_stock", "Limited"],
+            ["out_of_stock", "Unavailable"],
           ] as const
         ).map(([value, label]) => (
-          <SecondaryButton
+          <Button
             key={value}
             type="button"
-            className={status === value ? "border-stamp bg-stamp text-white" : ""}
+            variant={status === value ? "primary" : "secondary"}
             onClick={() => setStatusAndQty(value)}
           >
             {label}
-          </SecondaryButton>
+          </Button>
         ))}
       </div>
-      <label className="mt-4 block font-semibold" htmlFor={`qty-${row.id}`}>
-        {t.quantity}
-      </label>
-      <div className="mt-2 flex gap-2">
-        <SecondaryButton
-          type="button"
-          className="w-24"
-          onClick={() => setQuantity((value) => Math.max(0, value - 1))}
-        >
-          Minus
-        </SecondaryButton>
-        <input
+      <div className="mt-4">
+        <Input
           id={`qty-${row.id}`}
-          className={fieldClassName}
+          label={t.quantity}
           type="number"
           min={0}
           value={quantity}
           onChange={(event) => setQuantity(Number(event.target.value))}
         />
-        <SecondaryButton
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button
           type="button"
+          variant="secondary"
+          fullWidth={false}
+          className="w-24"
+          onClick={() => setQuantity((value) => Math.max(0, value - 1))}
+        >
+          Minus
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          fullWidth={false}
           className="w-24"
           onClick={() => setQuantity((value) => value + 1)}
         >
           Plus
-        </SecondaryButton>
+        </Button>
       </div>
       <div className="mt-4">
-        <PrimaryButton type="submit">{t.saveUpdate}</PrimaryButton>
+        <Button type="submit">{t.saveUpdate}</Button>
       </div>
-    </form>
+    </Card>
   );
 }

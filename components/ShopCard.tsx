@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { StatusPill } from "@/components/StatusPill";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { StatusBadge, stockLabel, stockTone } from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Shop } from "@/lib/types";
 import type { StockWithItem } from "@/lib/mockData";
@@ -19,28 +19,34 @@ export function ShopCard({ shop, stockRows }: Props) {
   const pills = stockRows.slice(0, 3);
 
   return (
-    <article className="border border-line bg-paper p-4">
-      <h2 className="font-serif text-xl font-semibold">{shop.name}</h2>
-      <p className="mt-1 text-body text-muted">
+    <Card as="article" variant="browse">
+      <h2 className="text-xl font-bold text-ink">{shop.name}</h2>
+      <p className="mt-1 text-body text-ink/70">
         {km} km {t.away}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {pills.map((row) => (
-          <StatusPill key={row.id} status={row.status} />
+          <StatusBadge
+            key={row.id}
+            tone={stockTone(row.status)}
+            label={stockLabel(row.status)}
+          />
         ))}
       </div>
-      <ul className="mt-3 text-body text-muted">
+      <ul className="mt-3 text-body text-ink/70">
         {pills.map((row) => (
           <li key={`${row.id}-label`}>
-            {lang === "ml" ? row.item.localized_names.ml ?? row.item.name : row.item.name}
+            {lang === "ml"
+              ? row.item.localized_names.ml ?? row.item.name
+              : row.item.name}
             {": "}
             {row.quantity ?? 0} {row.item.unit}
           </li>
         ))}
       </ul>
-      <Link href={`/shops/${shop.id}`} className="mt-4 block">
-        <PrimaryButton type="button">{t.viewShop}</PrimaryButton>
-      </Link>
-    </article>
+      <Button href={`/shops/${shop.id}`} className="mt-4">
+        {t.viewShop}
+      </Button>
+    </Card>
   );
 }

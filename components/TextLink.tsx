@@ -11,10 +11,8 @@ export function TextLink({ href, children, external = false }: Props) {
   return (
     <Link
       href={href}
-      className="inline-flex min-h-tap items-center font-semibold text-stamp hover:text-stamp-dark"
-      {...(external
-        ? { target: "_blank", rel: "noreferrer" }
-        : {})}
+      className="inline-flex min-h-tap items-center font-semibold text-monsoon hover:text-monsoon-light"
+      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
     >
       {children}
     </Link>

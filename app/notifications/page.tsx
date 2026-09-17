@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { PageShell } from "@/components/PageShell";
-import { SecondaryButton } from "@/components/SecondaryButton";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { notifications as sampleNotifications } from "@/lib/mockData";
@@ -16,30 +18,35 @@ export default function NotificationsPage() {
   return (
     <PageShell>
       <TextLink href="/dashboard">{t.back}</TextLink>
-      <h1 className="mt-3 font-serif text-title">{t.notifications}</h1>
+      <h1 className="mt-3 text-title font-extrabold text-ink">
+        {t.notifications}
+      </h1>
       <div className="mt-6">
-        <SecondaryButton type="button" onClick={() => setEmpty((value) => !value)}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setEmpty((value) => !value)}
+        >
           {empty ? t.showList : t.showEmpty}
-        </SecondaryButton>
+        </Button>
       </div>
       {rows.length === 0 ? (
-        <div className="mt-6 border border-line bg-paper p-4">
-          <p className="font-semibold">{t.noNotifications}</p>
-          <p className="mt-2 text-body text-muted">{t.noNotificationsBody}</p>
-        </div>
+        <Card variant="browse" className="mt-6">
+          <EmptyState title={t.noNotifications} body={t.noNotificationsBody} />
+        </Card>
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {rows.map((row) => (
-            <li key={row.id} className="border border-line bg-paper p-4">
+            <Card key={row.id} as="li" variant="browse">
               <p className="text-body">{row.message}</p>
-              <p className="mt-2 text-body text-muted">
+              <p className="mt-2 text-body text-ink/70">
                 {row.created_at
                   ? formatDistanceToNow(new Date(row.created_at), {
                       addSuffix: true,
                     })
                   : ""}
               </p>
-            </li>
+            </Card>
           ))}
         </ul>
       )}

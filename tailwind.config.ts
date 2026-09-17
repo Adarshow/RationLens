@@ -9,44 +9,46 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "var(--color-paper)",
-        ink: "var(--color-ink)",
-        muted: "var(--color-muted)",
-        line: "var(--color-line)",
-        stamp: {
-          DEFAULT: "var(--color-stamp)",
-          dark: "var(--color-stamp-dark)",
+        ink: "#10262B",
+        paper: "#F1EDE4",
+        "paper-dim": "#E8E2D4",
+        backwater: {
+          DEFAULT: "#1F5C57",
+          light: "#2E7A73",
+          dark: "#153F3B",
         },
-        available: {
-          DEFAULT: "var(--color-available)",
-          bg: "var(--color-available-bg)",
+        monsoon: {
+          DEFAULT: "#2B3A67",
+          light: "#3D4F85",
         },
-        low: {
-          DEFAULT: "var(--color-low)",
-          bg: "var(--color-low-bg)",
+        marigold: {
+          DEFAULT: "#E0A458",
+          light: "#F0C48A",
+          dark: "#B87F3A",
         },
-        out: {
-          DEFAULT: "var(--color-out)",
-          bg: "var(--color-out-bg)",
+        laterite: {
+          DEFAULT: "#B23A2E",
+          light: "#D45B4E",
         },
-        outdated: {
-          DEFAULT: "var(--color-outdated)",
-          bg: "var(--color-outdated-bg)",
+        leaf: {
+          DEFAULT: "#2F8F5B",
+          light: "#4FAF7A",
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "var(--font-ml)", "system-ui", "sans-serif"],
-        serif: ["var(--font-serif)", "var(--font-ml)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "var(--font-ml)", "sans-serif"],
       },
       fontSize: {
         body: ["1.0625rem", { lineHeight: "1.6" }],
-        title: ["1.75rem", { lineHeight: "1.25", fontWeight: "700" }],
+        title: ["1.75rem", { lineHeight: "1.25", fontWeight: "800" }],
+        section: ["15px", { lineHeight: "1.3", fontWeight: "700" }],
       },
       minHeight: {
         tap: "44px",
+        btn: "48px",
       },
       boxShadow: {
-        none: "none",
+        card: "0 1px 2px rgba(16, 38, 43, 0.06)",
       },
     },
   },

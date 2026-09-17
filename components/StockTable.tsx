@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { StatusPill } from "@/components/StatusPill";
+import { StatusBadge, stockLabel, stockTone } from "@/components/ui/StatusBadge";
+import { Card } from "@/components/ui/Card";
 import { TrustBadge } from "@/components/TrustBadge";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { StockWithItem } from "@/lib/mockData";
@@ -18,17 +19,25 @@ export function StockTable({ rows, action }: Props) {
     <div className="flex flex-col gap-3">
       {rows.map((row) => {
         const name =
-          lang === "ml" ? row.item.localized_names.ml ?? row.item.name : row.item.name;
+          lang === "ml"
+            ? row.item.localized_names.ml ?? row.item.name
+            : row.item.name;
+        const tone = stockTone(row.status);
+        const isAlert = row.status !== "available";
         return (
-          <div key={row.id} className="border border-line bg-paper p-4">
+          <Card
+            key={row.id}
+            variant={isAlert ? "alert" : "browse"}
+            tone={tone}
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-semibold">{name}</p>
+                <p className="font-semibold text-ink">{name}</p>
                 <p className="mt-1 tabular-nums">
                   {row.quantity ?? 0} {row.item.unit}
                 </p>
               </div>
-              <StatusPill status={row.status} />
+              <StatusBadge tone={tone} label={stockLabel(row.status)} />
             </div>
             <div className="mt-3">
               <TrustBadge
@@ -37,7 +46,7 @@ export function StockTable({ rows, action }: Props) {
               />
             </div>
             {action ? <div className="mt-3">{action(row)}</div> : null}
-          </div>
+          </Card>
         );
       })}
     </div>
