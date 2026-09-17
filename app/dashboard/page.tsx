@@ -14,6 +14,10 @@ import {
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getStockForShop, shops, shopDistanceKm } from "@/lib/mockData";
+import {
+  resolveUserLocation,
+  useUserLocation,
+} from "@/lib/useUserLocation";
 
 const ShopMap = dynamic(() => import("@/components/ShopMap"), { ssr: false });
 
@@ -22,16 +26,51 @@ export default function DashboardPage() {
   const [query, setQuery] = useState("");
   const [showChip, setShowChip] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
+  const [noteDismissed, setNoteDismissed] = useState(false);
+  const { location, status, refresh } = useUserLocation();
+  const activeLocation = resolveUserLocation(status, location);
 
   const sorted = useMemo(
-    () => [...shops].sort((a, b) => shopDistanceKm(a) - shopDistanceKm(b)),
-    [],
+    () =>
+      [...shops].sort(
+        (a, b) =>
+          shopDistanceKm(a, activeLocation) - shopDistanceKm(b, activeLocation),
+      ),
+    [activeLocation],
   );
 
   function onSearch(event: FormEvent) {
     event.preventDefault();
     setShowChip(true);
   }
+
+  const locationNote =
+    status === "loading" ? (
+      <p className="text-sm text-ink/70">{t.findingLocation}</p>
+    ) : !noteDismissed &&
+      (status === "denied" || status === "unsupported") ? (
+      <p className="text-sm text-ink/70">
+        {t.approximateLocation}{" "}
+        <button
+          type="button"
+          className="font-semibold text-monsoon underline-offset-2 hover:underline"
+          onClick={() => {
+            setNoteDismissed(false);
+            refresh();
+          }}
+        >
+          {t.tryAgain}
+        </button>
+        {" · "}
+        <button
+          type="button"
+          className="font-semibold text-ink/70 underline-offset-2 hover:underline"
+          onClick={() => setNoteDismissed(true)}
+        >
+          {t.dismiss}
+        </button>
+      </p>
+    ) : null;
 
   const filters = (
     <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
@@ -43,6 +82,7 @@ export default function DashboardPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        {locationNote}
         <Button type="submit" fullWidth>
           {t.search}
         </Button>
@@ -84,7 +124,11 @@ export default function DashboardPage() {
           </SectionHeading>
           <div className="mt-3">
             {view === "map" ? (
-              <ShopMap shops={sorted} />
+              <ShopMap
+                shops={sorted}
+                userLocation={activeLocation}
+                showUserMarker={status === "granted"}
+              />
             ) : (
               <CardGrid>
                 {sorted.map((shop) => (
@@ -92,6 +136,7 @@ export default function DashboardPage() {
                     key={shop.id}
                     shop={shop}
                     stockRows={getStockForShop(shop.id)}
+                    userLocation={activeLocation}
                   />
                 ))}
               </CardGrid>

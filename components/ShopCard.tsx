@@ -5,17 +5,18 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Shop } from "@/lib/types";
-import type { StockWithItem } from "@/lib/mockData";
+import type { StockWithItem, UserLocation } from "@/lib/mockData";
 import { shopDistanceKm } from "@/lib/mockData";
 
 type Props = {
   shop: Shop;
   stockRows: StockWithItem[];
+  userLocation: UserLocation;
 };
 
-export function ShopCard({ shop, stockRows }: Props) {
+export function ShopCard({ shop, stockRows, userLocation }: Props) {
   const { lang, t } = useLanguage();
-  const km = shopDistanceKm(shop).toFixed(1);
+  const km = shopDistanceKm(shop, userLocation).toFixed(1);
   const pills = stockRows.slice(0, 3);
 
   return (

@@ -8,6 +8,10 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getShop, getStockForShop, shopDistanceKm } from "@/lib/mockData";
+import {
+  resolveUserLocation,
+  useUserLocation,
+} from "@/lib/useUserLocation";
 
 type Props = {
   params: { shopId: string };
@@ -15,6 +19,8 @@ type Props = {
 
 export default function ShopDetailPage({ params }: Props) {
   const { t } = useLanguage();
+  const { location, status } = useUserLocation();
+  const activeLocation = resolveUserLocation(status, location);
   const shop = getShop(params.shopId);
   if (!shop) {
     return (
@@ -25,8 +31,11 @@ export default function ShopDetailPage({ params }: Props) {
   }
 
   const rows = getStockForShop(shop.id);
-  const km = shopDistanceKm(shop).toFixed(1);
-  const maps = `https://www.openstreetmap.org/?mlat=${shop.latitude}&mlon=${shop.longitude}#map=16/${shop.latitude}/${shop.longitude}`;
+  const km = shopDistanceKm(shop, activeLocation).toFixed(1);
+  const maps =
+    status === "granted"
+      ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${activeLocation.latitude}%2C${activeLocation.longitude}%3B${shop.latitude}%2C${shop.longitude}`
+      : `https://www.openstreetmap.org/?mlat=${shop.latitude}&mlon=${shop.longitude}#map=16/${shop.latitude}/${shop.longitude}`;
 
   return (
     <PageContainer>

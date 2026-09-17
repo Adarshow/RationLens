@@ -17,9 +17,14 @@ function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 }
 
-export const USER_LOCATION = {
+export const FALLBACK_LOCATION = {
   latitude: 11.2588,
   longitude: 75.7804,
+};
+
+export type UserLocation = {
+  latitude: number;
+  longitude: number;
 };
 
 export const TEST_LOGINS = {
@@ -255,10 +260,10 @@ export function distanceKm(
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export function shopDistanceKm(shop: Shop): number {
+export function shopDistanceKm(shop: Shop, userLocation: UserLocation): number {
   return distanceKm(
-    USER_LOCATION.latitude,
-    USER_LOCATION.longitude,
+    userLocation.latitude,
+    userLocation.longitude,
     shop.latitude,
     shop.longitude,
   );
