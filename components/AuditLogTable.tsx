@@ -8,7 +8,10 @@ import { getItem } from "@/lib/mockData";
 import type { StockUpdate } from "@/lib/types";
 
 type Props = {
-  rows: StockUpdate[];
+  rows: (StockUpdate & {
+    item_name?: string | null;
+    item_unit?: string | null;
+  })[];
 };
 
 export function AuditLogTable({ rows }: Props) {
@@ -16,14 +19,16 @@ export function AuditLogTable({ rows }: Props) {
     <CardGrid>
       {rows.map((row) => {
         const item = getItem(row.item_id ?? "");
+        const itemName = row.item_name ?? item?.name ?? "Item";
+        const itemUnit = row.item_unit ?? item?.unit;
         const when = row.created_at
           ? formatDistanceToNow(new Date(row.created_at), { addSuffix: true })
           : "";
         return (
           <Card key={row.id} as="article" variant="browse">
-            <p className="font-semibold text-ink">{item?.name ?? "Item"}</p>
+            <p className="font-semibold text-ink">{itemName}</p>
             <p className="mt-2 text-sm md:text-base">
-              {row.old_quantity} {item?.unit} → {row.new_quantity} {item?.unit}
+              {row.old_quantity} {itemUnit} → {row.new_quantity} {itemUnit}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <StatusBadge
