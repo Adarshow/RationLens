@@ -49,6 +49,11 @@ export default function LoginPage() {
         router.refresh();
         return;
       }
+      if (profile?.role === "admin") {
+        router.push("/admin/shopkeepers");
+        router.refresh();
+        return;
+      }
 
       setError(t.loginError);
     } catch {
