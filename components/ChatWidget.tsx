@@ -5,6 +5,7 @@ import { useLanguage } from "./LanguageProvider";
 import { useTTS } from "@/lib/useTTS";
 import { Button } from "./ui/Button";
 import { useUserLocation, resolveUserLocation } from "@/lib/useUserLocation";
+import { createClient } from "@/lib/supabase/client";
 
 type Message = {
   id: string;
@@ -26,6 +27,8 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isListening, setIsListening] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [roleChecked, setRoleChecked] = useState(false);
 
   const { lang, t } = useLanguage();
   const { speak, stop, speaking } = useTTS(lang);
@@ -33,6 +36,23 @@ export function ChatWidget() {
   
   const { location, status } = useUserLocation();
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) {
+        setRoleChecked(true);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      setIsAdmin(profile?.role === "admin");
+      setRoleChecked(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -141,6 +161,8 @@ export function ChatWidget() {
   function handleActionClick(action: string) {
     sendMessage(action);
   }
+
+  if (!roleChecked || isAdmin) return null;
 
   if (!isOpen) {
     return (
