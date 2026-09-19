@@ -27,6 +27,14 @@ function ShopsIcon() {
   );
 }
 
+function HomeIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-8.5Z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function BellIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -181,6 +189,7 @@ export function Nav() {
         { href: "/shopkeeper/history", label: t.history, icon: <ClockIcon /> },
       ]
     : [
+        { href: "/", label: t.home, icon: <HomeIcon /> },
         { href: "/dashboard", label: t.nearbyShops, icon: <ShopsIcon /> },
         { href: "/rights", label: t.rightsTitle, icon: <BookIcon /> },
         { href: "/notifications", label: t.notifications, icon: <BellIcon /> },
@@ -193,6 +202,7 @@ export function Nav() {
   }
 
   function isActive(href: string) {
+    if (href === "/") return pathname === "/";
     if (href === "/shopkeeper") return pathname === "/shopkeeper";
     if (href === "/dashboard") {
       return pathname === "/dashboard" || pathname.startsWith("/shops/");
@@ -285,7 +295,7 @@ export function Nav() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-paper-dim bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Main"
       >
-        <ul className={cn("grid", isAdmin ? "grid-cols-3" : isShopkeeper ? "grid-cols-4" : "grid-cols-4")}>
+        <ul className={cn("grid", isAdmin ? "grid-cols-3" : isShopkeeper ? "grid-cols-4" : "grid-cols-5")}>
           {items.map((item) => {
             const active = isActive(item.href);
             if (item.href === "#logout") {

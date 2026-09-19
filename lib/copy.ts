@@ -136,6 +136,7 @@ export const copy = {
     nearbyShopsSubtitle: "Find nearby ration shops and see live stock availability.",
     understandEntitlements: "Understand your entitlements",
     lowAccuracyLocation: "Location may be approximate",
+    home: "Home",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -272,5 +273,6 @@ export const copy = {
     nearbyShopsSubtitle: "അടുത്തുള്ള റേഷൻ കടകൾ കണ്ടെത്തി തത്സമയ സ്റ്റോക്ക് ലഭ്യത കാണുക.",
     understandEntitlements: "നിങ്ങളുടെ അവകാശങ്ങൾ മനസ്സിലാക്കുക",
     lowAccuracyLocation: "സ്ഥലം ഏകദേശമായിരിക്കാം",
+    home: "ഹോം",
   },
 } as const;
