@@ -38,9 +38,19 @@ export default async function AdminComplaintsPage() {
 
   console.log("Complaints fetch result:", { complaints, error });
 
+  const formattedComplaints = (complaints || []).map((c: any) => ({
+    id: c.id,
+    category: c.category,
+    description: c.description,
+    status: c.status,
+    created_at: c.created_at,
+    shops: Array.isArray(c.shops) ? c.shops[0] : c.shops,
+    profiles: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
+  }));
+
   // Order with open first, then resolved
-  const open = (complaints || []).filter(c => c.status === "open");
-  const resolved = (complaints || []).filter(c => c.status === "resolved");
+  const open = formattedComplaints.filter(c => c.status === "open");
+  const resolved = formattedComplaints.filter(c => c.status === "resolved");
 
   return <AdminComplaintsClient initialComplaints={[...open, ...resolved]} />;
 }

@@ -13,23 +13,33 @@ export async function POST(request: Request) {
       return new NextResponse("Messages are required", { status: 400 });
     }
 
-    let shopContext = "";
-    if (userLocation && userLocation.latitude && userLocation.longitude) {
-      const shopsWithDistances = shops.map((shop) => ({
+    const shopsData = shops.map((shop) => {
+      let dist: number | null = null;
+      if (userLocation && typeof userLocation.latitude === "number" && typeof userLocation.longitude === "number") {
+        dist = shopDistanceKm(shop, userLocation);
+      }
+      return {
         ...shop,
-        distance: shopDistanceKm(shop, userLocation),
+        distance: dist,
         stock: getStockForShop(shop.id),
-      })).sort((a, b) => a.distance - b.distance);
+      };
+    });
 
-      shopContext = `
-Nearby Shops and Current Stock Availability:
-${shopsWithDistances.map(s => `- ${s.name} (${s.distance.toFixed(1)} km away)\n  Address: ${s.address}\n  Stock: ${s.stock.map(st => `${st.item.name}: ${st.status} (${st.quantity} ${st.item.unit})`).join(', ')}`).join('\n')}
-
-When the user asks for the "nearest shop" or "closest store", refer to the shop with the smallest distance. If they ask about a specific item (e.g., Kerosene or Rice), ensure you tell them if it's available or out of stock at the nearby shops.
-`;
+    if (userLocation && typeof userLocation.latitude === "number") {
+      shopsData.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
     }
 
-    const systemInstruction = `You are a helpful, concise assistant for the RationLens app, providing information about Kerala's Public Distribution System.
+    const shopContext = `
+Nearby Shops and Current Stock Availability:
+${shopsData.map(s => `- ${s.name} ${s.distance !== null ? `(${s.distance.toFixed(1)} km away)` : ''}\n  Address: ${s.address}\n  Stock: ${s.stock.map(st => `${st.item.name}: ${st.status} (${st.quantity} ${st.item.unit})`).join(', ')}`).join('\n')}
+
+When the user asks for the "nearest shop" or "closest store":
+- If distances are provided (e.g. "km away"), refer to the shop with the smallest distance.
+- If no distances are provided, inform the user that their live location is not available and list the shops without distances.
+If they ask about a specific item (e.g., Kerosene or Rice), ensure you tell them if it's available or out of stock at the shops.
+`;
+
+    const systemInstruction = `You are a helpful, concise assistant for the RationLens app, providing information about Kerala's Public Distribution System, ration card entitlements, nearby ration shops, and their current stock levels.
     The user is currently communicating in: ${lang === "ml" ? "Malayalam" : "English"}.
     Always respond in the user's language (${lang === "ml" ? "Malayalam" : "English"}).
     
@@ -38,7 +48,7 @@ When the user asks for the "nearest shop" or "closest store", refer to the shop 
     
     ${shopContext}
     
-    Use this exact data to answer any questions regarding amounts of rice, wheat, or kerosene. 
+    Use this exact data to answer any questions regarding amounts of rice, wheat, or kerosene, as well as shop locations and stock availability. 
     Be direct and to the point.
     `;
 

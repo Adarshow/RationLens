@@ -11,7 +11,7 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Shop } from "@/lib/types";
-import type { UserLocation } from "@/lib/mockData";
+import { FALLBACK_LOCATION, type UserLocation } from "@/lib/mockData";
 
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -38,7 +38,7 @@ function Recenter({ location }: { location: UserLocation }) {
 
 type Props = {
   shops: Shop[];
-  userLocation: UserLocation;
+  userLocation: UserLocation | null;
   showUserMarker?: boolean;
 };
 
@@ -51,22 +51,24 @@ export default function ShopMap({
     L.Marker.prototype.options.icon = markerIcon;
   }, []);
 
+  const centerLocation = userLocation ?? FALLBACK_LOCATION;
+
   return (
     <div className="h-[280px] w-full overflow-hidden rounded-2xl bg-paper-dim shadow-card md:h-[420px] lg:h-[520px]">
       <MapContainer
-        center={[userLocation.latitude, userLocation.longitude]}
+        center={[centerLocation.latitude, centerLocation.longitude]}
         zoom={14}
         className="h-full w-full"
         scrollWheelZoom={false}
       >
-        <Recenter location={userLocation} />
+        <Recenter location={centerLocation} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {showUserMarker ? (
           <Marker
-            position={[userLocation.latitude, userLocation.longitude]}
+            position={[centerLocation.latitude, centerLocation.longitude]}
             icon={youIcon}
           >
             <Popup>You are here</Popup>

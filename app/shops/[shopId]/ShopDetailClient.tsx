@@ -39,9 +39,10 @@ export function ShopDetailClient({ shop, rows, history }: Props) {
     );
   }
 
-  const km = shopDistanceKm(shop, activeLocation).toFixed(1);
+  const kmRaw = shopDistanceKm(shop, activeLocation);
+  const km = kmRaw !== null ? kmRaw.toFixed(1) : "--";
   const maps =
-    status === "granted"
+    status === "granted" && activeLocation
       ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${activeLocation.latitude}%2C${activeLocation.longitude}%3B${shop.latitude}%2C${shop.longitude}`
       : `https://www.openstreetmap.org/?mlat=${shop.latitude}&mlon=${shop.longitude}#map=16/${shop.latitude}/${shop.longitude}`;
 

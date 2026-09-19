@@ -19,7 +19,7 @@ export function ChatWidget() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! How can I help you with ration card details today?",
+      content: "Hello! How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");

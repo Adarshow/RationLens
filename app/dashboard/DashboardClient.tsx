@@ -39,14 +39,17 @@ export function DashboardClient({ shops, stockByShop }: Props) {
   const [searchPending, setSearchPending] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
   const [noteDismissed, setNoteDismissed] = useState(false);
-  const { location, status, refresh } = useUserLocation();
+  const { location, status, refresh, placeName } = useUserLocation();
   const activeLocation = resolveUserLocation(status, location);
 
   const sorted = useMemo(
     () =>
       [...shops].sort(
-        (a, b) =>
-          shopDistanceKm(a, activeLocation) - shopDistanceKm(b, activeLocation),
+        (a, b) => {
+          const distA = shopDistanceKm(a, activeLocation);
+          const distB = shopDistanceKm(b, activeLocation);
+          return (distA ?? 0) - (distB ?? 0);
+        }
       ),
     [activeLocation, shops],
   );
@@ -217,7 +220,20 @@ export function DashboardClient({ shops, stockByShop }: Props) {
 
   return (
     <PageContainer>
-      <PageTitle>{t.nearbyShops}</PageTitle>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <PageTitle>{t.nearbyShops}</PageTitle>
+        {activeLocation ? (
+          <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span className="font-medium truncate" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
+              {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
+            </span>
+          </div>
+        ) : null}
+      </div>
       <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,20rem)_1fr] lg:items-start lg:gap-8">
         {filters}
         <div>

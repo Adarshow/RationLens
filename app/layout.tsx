@@ -4,6 +4,7 @@ import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Nav } from "@/components/Nav";
 import { ChatWidget } from "@/components/ChatWidget";
+import { UserLocationProvider } from "@/lib/useUserLocation";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -42,9 +43,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <LanguageProvider>
-          <Nav />
-          {children}
-          <ChatWidget />
+          <UserLocationProvider>
+            <Nav />
+            {children}
+            <ChatWidget />
+          </UserLocationProvider>
         </LanguageProvider>
       </body>
     </html>

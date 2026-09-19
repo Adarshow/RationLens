@@ -255,7 +255,8 @@ export function distanceKm(
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export function shopDistanceKm(shop: Shop, userLocation: UserLocation): number {
+export function shopDistanceKm(shop: Shop, userLocation: UserLocation | null): number | null {
+  if (!userLocation) return null;
   return distanceKm(
     userLocation.latitude,
     userLocation.longitude,

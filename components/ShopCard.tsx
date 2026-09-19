@@ -11,12 +11,13 @@ import { shopDistanceKm } from "@/lib/mockData";
 type Props = {
   shop: Shop;
   stockRows: StockWithItem[];
-  userLocation: UserLocation;
+  userLocation: UserLocation | null;
 };
 
 export function ShopCard({ shop, stockRows, userLocation }: Props) {
   const { lang, t } = useLanguage();
-  const km = shopDistanceKm(shop, userLocation).toFixed(1);
+  const kmRaw = shopDistanceKm(shop, userLocation);
+  const km = kmRaw !== null ? kmRaw.toFixed(1) : "--";
   const visibleRows = stockRows.slice(0, 4);
 
   return (
@@ -29,7 +30,7 @@ export function ShopCard({ shop, stockRows, userLocation }: Props) {
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-backwater/10 px-2.5 py-1 text-xs font-bold tabular-nums text-backwater">
-          {km} km
+          {km === "--" ? "--" : `${km} km`}
         </span>
       </div>
       <div className="mt-4 flex-1">
