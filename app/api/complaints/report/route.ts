@@ -6,8 +6,10 @@ export async function POST(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  console.log("Complaint submit — user:", user?.id ?? "NO USER");
+
   if (!user) {
-    return jsonError("Not authenticated", 401);
+    return jsonError("Not authenticated - please log in again", 401);
   }
 
   const body = await request.json();
@@ -26,7 +28,8 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return jsonError("Failed to submit complaint", 500);
+    console.error("Complaint insert failed:", JSON.stringify(error, null, 2));
+    return jsonError(`Failed to submit complaint: ${error.message}`, 500);
   }
 
   // Attempt to notify admins if possible, though mostly relying on badge count

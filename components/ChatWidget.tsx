@@ -6,6 +6,7 @@ import { useTTS } from "@/lib/useTTS";
 import { Button } from "./ui/Button";
 import { useUserLocation, resolveUserLocation } from "@/lib/useUserLocation";
 import { createClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
 
 type Message = {
   id: string;
@@ -36,6 +37,7 @@ export function ChatWidget() {
   
   const { location, status } = useUserLocation();
   const recognitionRef = useRef<any>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
@@ -162,7 +164,7 @@ export function ChatWidget() {
     sendMessage(action);
   }
 
-  if (!roleChecked || isAdmin) return null;
+  if (pathname.startsWith("/admin") || (!roleChecked || isAdmin)) return null;
 
   if (!isOpen) {
     return (
