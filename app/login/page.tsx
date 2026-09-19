@@ -9,6 +9,7 @@ import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { createClient } from "@/lib/supabase/client";
+import { DemoAccountsCard } from "@/components/DemoAccountsCard";
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -100,6 +101,12 @@ export default function LoginPage() {
         <p className="mt-6">
           <TextLink href="/signup">{t.signup}</TextLink>
         </p>
+        <DemoAccountsCard
+          onSelect={(demoEmail, demoPassword) => {
+            setEmail(demoEmail);
+            setPassword(demoPassword);
+          }}
+        />
       </div>
     </PageContainer>
   );
