@@ -3,6 +3,7 @@ import { Manrope, Noto_Sans_Malayalam } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Nav } from "@/components/Nav";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
         <LanguageProvider>
           <Nav />
           {children}
+          <ChatWidget />
         </LanguageProvider>
       </body>
     </html>
