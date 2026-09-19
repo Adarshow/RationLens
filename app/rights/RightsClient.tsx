@@ -5,7 +5,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { VoiceControls } from "@/components/VoiceControls";
+import { RightsReadAloud } from "@/components/RightsReadAloud";
 import { TextLink } from "@/components/TextLink";
 import { cn } from "@/lib/cn";
 import {
@@ -107,7 +107,7 @@ export function RightsClient() {
         </Card>
 
         <div className="lg:w-72">
-          <VoiceControls lang={lang} speakText={speakText} />
+          <RightsReadAloud lang={lang} speakText={speakText} />
         </div>
       </div>
 

@@ -105,6 +105,7 @@ export const copy = {
     rejectionFailed: "Rejection failed.",
     confirmReject: "Are you sure you want to reject this applicant?",
     unknownName: "Unknown Name",
+    noMalayalamVoice: "No Malayalam voice found on this device — try a different browser or device, or read the text directly.",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -210,5 +211,6 @@ export const copy = {
     rejectionFailed: "നിരസിക്കൽ പരാജയപ്പെട്ടു.",
     confirmReject: "ഈ അപേക്ഷകനെ നിരസിക്കണമെന്ന് തീർച്ചയാണോ?",
     unknownName: "പേര് അജ്ഞാതം",
+    noMalayalamVoice: "ഈ ഉപകരണത്തിൽ മലയാളം ശബ്ദം ലഭ്യമല്ല — മറ്റൊരു ബ്രൗസറോ ഉപകരണമോ ഉപയോഗിച്ച് നോക്കുക, അല്ലെങ്കിൽ ടെക്സ്റ്റ് നേരിട്ട് വായിക്കുക.",
   },
 } as const;
