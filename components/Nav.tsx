@@ -85,6 +85,26 @@ function ClockIcon() {
   );
 }
 
+function BookIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+
 const chromeInner =
   "mx-auto flex w-full items-center px-4 md:max-w-3xl md:px-6 lg:max-w-6xl lg:px-8";
 
@@ -118,6 +138,7 @@ export function Nav() {
       ]
     : [
         { href: "/dashboard", label: t.nearbyShops, icon: <ShopsIcon /> },
+        { href: "/rights", label: t.rightsTitle, icon: <BookIcon /> },
         { href: "/notifications", label: t.notifications, icon: <BellIcon /> },
         { href: "/login", label: t.login, icon: <UserIcon /> },
       ];
@@ -200,7 +221,7 @@ export function Nav() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-paper-dim bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Main"
       >
-        <ul className="grid grid-cols-3">
+        <ul className={cn("grid", isShopkeeper ? "grid-cols-3" : "grid-cols-4")}>
           {items.map((item) => {
             const active = isActive(item.href);
             return (
