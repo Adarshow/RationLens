@@ -130,6 +130,11 @@ export const copy = {
     dateLabel: "Date",
     noComplaintsFound: "No complaints found.",
     shopkeeperDetails: "Shopkeeper details",
+    taglineCommunity: "Stronger Communities",
+    taglineTransparent: "Transparent Ration",
+    taglineFair: "A Fairer Kerala",
+    nearbyShopsSubtitle: "Find nearby ration shops and see live stock availability.",
+    understandEntitlements: "Understand your entitlements",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -260,5 +265,10 @@ export const copy = {
     dateLabel: "തീയതി",
     noComplaintsFound: "പരാതികളൊന്നും കണ്ടെത്തിയില്ല.",
     shopkeeperDetails: "കടയുടമയുടെ വിവരങ്ങൾ",
+    taglineCommunity: "ശക്തമായ സമൂഹങ്ങൾ",
+    taglineTransparent: "സുതാര്യമായ റേഷൻ",
+    taglineFair: "കൂടുതൽ നീതിയുള്ള കേരളം",
+    nearbyShopsSubtitle: "അടുത്തുള്ള റേഷൻ കടകൾ കണ്ടെത്തി തത്സമയ സ്റ്റോക്ക് ലഭ്യത കാണുക.",
+    understandEntitlements: "നിങ്ങളുടെ അവകാശങ്ങൾ മനസ്സിലാക്കുക",
   },
 } as const;
