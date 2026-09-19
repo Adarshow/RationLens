@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import type { Shop } from "@/lib/types";
 import type { StockWithItem, UserLocation } from "@/lib/mockData";
 import { shopDistanceKm } from "@/lib/mockData";
+import { isShopOpenNow } from "@/lib/shopHours";
 
 type Props = {
   shop: Shop;
@@ -19,6 +20,7 @@ export function ShopCard({ shop, stockRows, userLocation }: Props) {
   const kmRaw = shopDistanceKm(shop, userLocation);
   const km = kmRaw !== null ? kmRaw.toFixed(1) : "--";
   const visibleRows = stockRows.slice(0, 4);
+  const isOpen = isShopOpenNow(shop);
 
   return (
     <Card as="article" variant="browse" className="flex h-full min-h-[19rem] flex-col">
@@ -29,9 +31,12 @@ export function ShopCard({ shop, stockRows, userLocation }: Props) {
             {shop.address ?? "Local ration shop"}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-backwater/10 px-2.5 py-1 text-xs font-bold tabular-nums text-backwater">
-          {km === "--" ? "--" : `${km} km`}
-        </span>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span className="rounded-full bg-backwater/10 px-2.5 py-1 text-xs font-bold tabular-nums text-backwater">
+            {km === "--" ? "--" : `${km} km`}
+          </span>
+          <StatusBadge tone={isOpen ? "success" : "danger"} label={isOpen ? t.shopOpenNow : t.shopClosedNow} />
+        </div>
       </div>
       <div className="mt-4 flex-1">
         <div className="mb-2 flex items-center justify-between">

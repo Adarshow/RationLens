@@ -36,6 +36,11 @@ export const shops: Shop[] = [
     latitude: 11.2551,
     longitude: 75.7809,
     created_at: hoursAgo(40),
+    morning_open: "08:00",
+    morning_close: "13:00",
+    evening_open: "15:00",
+    evening_close: "19:00",
+    closed_on_sunday: true,
   },
   {
     id: "shop-b",
@@ -44,6 +49,11 @@ export const shops: Shop[] = [
     latitude: 11.2642,
     longitude: 75.7871,
     created_at: hoursAgo(40),
+    morning_open: "08:00",
+    morning_close: "13:00",
+    evening_open: "15:00",
+    evening_close: "19:00",
+    closed_on_sunday: true,
   },
   {
     id: "shop-c",
@@ -52,6 +62,11 @@ export const shops: Shop[] = [
     latitude: 11.2518,
     longitude: 75.7736,
     created_at: hoursAgo(40),
+    morning_open: "08:00",
+    morning_close: "13:00",
+    evening_open: "15:00",
+    evening_close: "19:00",
+    closed_on_sunday: true,
   },
 ];
 

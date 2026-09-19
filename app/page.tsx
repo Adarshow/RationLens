@@ -31,6 +31,11 @@ function toShop(row: Shop): Shop {
     latitude: Number(row.latitude),
     longitude: Number(row.longitude),
     created_at: row.created_at ?? null,
+    morning_open: row.morning_open ?? null,
+    morning_close: row.morning_close ?? null,
+    evening_open: row.evening_open ?? null,
+    evening_close: row.evening_close ?? null,
+    closed_on_sunday: row.closed_on_sunday ?? null,
   };
 }
 
@@ -40,7 +45,7 @@ export default async function WelcomePage() {
     const [{ data: shopRows }, { data: stockRows }] = await Promise.all([
       supabase
         .from("shops")
-        .select("id, name, address, latitude, longitude, created_at"),
+        .select("id, name, address, latitude, longitude, created_at, morning_open, morning_close, evening_open, evening_close, closed_on_sunday"),
       supabase.from("stock").select(
         "id, shop_id, item_id, quantity, status, last_updated_at, verification_status, updated_by, items (id, name, localized_names, unit)",
       ),

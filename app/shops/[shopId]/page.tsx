@@ -58,6 +58,11 @@ function toShop(row: Shop): Shop {
     created_at: row.created_at ?? null,
     contact_person: row.contact_person ?? null,
     contact_phone: row.contact_phone ?? null,
+    morning_open: row.morning_open ?? null,
+    morning_close: row.morning_close ?? null,
+    evening_open: row.evening_open ?? null,
+    evening_close: row.evening_close ?? null,
+    closed_on_sunday: row.closed_on_sunday ?? null,
   };
 }
 
@@ -89,7 +94,7 @@ export default async function ShopDetailPage({
     const supabase = createClient();
     const { data: shopRow } = await supabase
       .from("shops")
-      .select("id, name, address, latitude, longitude, created_at, contact_person, contact_phone")
+      .select("id, name, address, latitude, longitude, created_at, contact_person, contact_phone, morning_open, morning_close, evening_open, evening_close, closed_on_sunday")
       .eq("id", params.shopId)
       .maybeSingle();
 

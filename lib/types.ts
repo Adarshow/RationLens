@@ -49,6 +49,11 @@ export type Shop = {
   created_at: string | null;
   contact_person?: string | null;
   contact_phone?: string | null;
+  morning_open: string | null;
+  morning_close: string | null;
+  evening_open: string | null;
+  evening_close: string | null;
+  closed_on_sunday: boolean | null;
 };
 
 export type Item = {

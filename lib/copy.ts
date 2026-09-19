@@ -145,6 +145,8 @@ export const copy = {
     disclaimerBullet1: "Entitlements and quantities are as per Government of Kerala regulations.",
     disclaimerBullet2: "Availability may vary by shop.",
     disclaimerBullet3: "Please refer to the latest orders for updates.",
+    shopOpenNow: "Open now",
+    shopClosedNow: "Closed",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -290,5 +292,7 @@ export const copy = {
     disclaimerBullet1: "അവകാശങ്ങളും അളവുകളും കേരള സർക്കാർ ചട്ടങ്ങൾ പ്രകാരമാണ്.",
     disclaimerBullet2: "ലഭ്യത കടയനുസരിച്ച് വ്യത്യാസപ്പെടാം.",
     disclaimerBullet3: "പുതുക്കിയ വിവരങ്ങൾക്ക് ഏറ്റവും പുതിയ ഉത്തരവുകൾ പരിശോധിക്കുക.",
+    shopOpenNow: "ഇപ്പോൾ തുറന്നിരിക്കുന്നു",
+    shopClosedNow: "അടച്ചിരിക്കുന്നു",
   },
 } as const;

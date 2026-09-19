@@ -10,9 +10,11 @@ import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TextLink } from "@/components/TextLink";
 import { Button } from "@/components/ui/Button";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AuditLogTable } from "@/components/AuditLogTable";
 import { useLanguage } from "@/components/LanguageProvider";
 import { shopDistanceKm, type StockWithItem } from "@/lib/mockData";
+import { isShopOpenNow } from "@/lib/shopHours";
 import type { Shop, StockUpdate } from "@/lib/types";
 import {
   resolveUserLocation,
@@ -41,6 +43,7 @@ export function ShopDetailClient({ shop, rows, history }: Props) {
 
   const kmRaw = shopDistanceKm(shop, activeLocation);
   const km = kmRaw !== null ? kmRaw.toFixed(1) : "--";
+  const isOpen = isShopOpenNow(shop);
   const maps =
     status === "granted" && activeLocation
       ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${activeLocation.latitude}%2C${activeLocation.longitude}%3B${shop.latitude}%2C${shop.longitude}`
@@ -53,9 +56,12 @@ export function ShopDetailClient({ shop, rows, history }: Props) {
         <div className="mt-3">
           <PageTitle>{shop.name}</PageTitle>
         </div>
-        <p className="mt-3 text-sm text-ink/70 md:text-base">
-          {shop.address} · {km} km {t.away}
-        </p>
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-sm text-ink/70 md:text-base">
+            {shop.address} · {km} km {t.away}
+          </p>
+          <StatusBadge tone={isOpen ? "success" : "danger"} label={isOpen ? t.shopOpenNow : t.shopClosedNow} />
+        </div>
         <TextLink href={maps} external>
           {t.getDirections}
         </TextLink>
