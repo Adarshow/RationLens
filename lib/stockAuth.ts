@@ -36,6 +36,25 @@ export async function requireOwnedShop(shopId: unknown) {
   return { supabase, user, shopId };
 }
 
+export async function requireAdmin(supabase: any) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return jsonError("Not authenticated", 401);
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    return jsonError("Not authorized", 403);
+  }
+
+  return null;
+}
+
 export function statusFromQuantity(quantity: number) {
   return quantity === 0 ? "out_of_stock" : "available";
 }

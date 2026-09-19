@@ -2,6 +2,7 @@
 
 import { StockTable } from "@/components/StockTable";
 import { NotifyButton } from "@/components/NotifyButton";
+import { ReportComplaintForm } from "@/components/ReportComplaintForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -64,6 +65,10 @@ export function ShopDetailClient({ shop, rows }: Props) {
                 ) : null
               }
             />
+          </div>
+          
+          <div className="mt-8 border-t border-paper-dim pt-6">
+            <ReportComplaintForm shopId={shop.id} />
           </div>
         </div>
       </div>

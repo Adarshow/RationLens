@@ -115,6 +115,7 @@ export function Nav() {
   const isShopkeeper = pathname.startsWith("/shopkeeper");
   const isAdmin = pathname.startsWith("/admin");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [complaintCount, setComplaintCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -146,6 +147,22 @@ export function Nav() {
     };
   }, [isShopkeeper, isAdmin, pathname]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    let active = true;
+    void fetch("/api/admin/complaints/count")
+      .then((res) => (res.ok ? res.json() : { count: 0 }))
+      .then((result: { count?: number }) => {
+        if (active) setComplaintCount(result.count ?? 0);
+      })
+      .catch(() => {
+        if (active) setComplaintCount(0);
+      });
+    return () => {
+      active = false;
+    };
+  }, [isAdmin, pathname]);
+
   async function signOut() {
     await createClient().auth.signOut();
     router.push("/");
@@ -155,6 +172,7 @@ export function Nav() {
   const items: NavItem[] = isAdmin
     ? [
         { href: "/admin/shopkeepers", label: t.adminShopkeeperQueue, icon: <BoxIcon /> },
+        { href: "/admin/complaints", label: t.adminComplaintsQueue, icon: <BellIcon /> },
       ]
     : isShopkeeper
     ? [
@@ -249,9 +267,9 @@ export function Nav() {
                         : "text-ink/70 hover:bg-paper-dim hover:text-ink",
                     )}>
                       {item.label}
-                      {item.href === "/notifications" && unreadCount > 0 ? (
+                      {(item.href === "/notifications" && unreadCount > 0) || (item.href === "/admin/complaints" && complaintCount > 0) ? (
                         <span className="rounded-full bg-laterite px-1.5 py-0.5 text-[10px] font-bold text-white">
-                          {unreadCount > 9 ? "9+" : unreadCount}
+                          {item.href === "/notifications" ? (unreadCount > 9 ? "9+" : unreadCount) : (complaintCount > 9 ? "9+" : complaintCount)}
                         </span>
                       ) : null}
                     </Link>
@@ -267,7 +285,7 @@ export function Nav() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-paper-dim bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Main"
       >
-        <ul className={cn("grid", isAdmin ? "grid-cols-2" : isShopkeeper ? "grid-cols-4" : "grid-cols-4")}>
+        <ul className={cn("grid", isAdmin ? "grid-cols-3" : isShopkeeper ? "grid-cols-4" : "grid-cols-4")}>
           {items.map((item) => {
             const active = isActive(item.href);
             if (item.href === "#logout") {
@@ -314,9 +332,9 @@ export function Nav() {
                   </span>
                   <span className="relative line-clamp-1 text-center">
                     {item.label}
-                    {item.href === "/notifications" && unreadCount > 0 ? (
+                    {(item.href === "/notifications" && unreadCount > 0) || (item.href === "/admin/complaints" && complaintCount > 0) ? (
                       <span className="absolute -right-3 -top-2 rounded-full bg-laterite px-1 text-[9px] font-bold text-white">
-                        {unreadCount > 9 ? "9+" : unreadCount}
+                        {item.href === "/notifications" ? (unreadCount > 9 ? "9+" : unreadCount) : (complaintCount > 9 ? "9+" : complaintCount)}
                       </span>
                     ) : null}
                   </span>
