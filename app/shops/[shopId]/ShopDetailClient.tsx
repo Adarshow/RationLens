@@ -61,23 +61,23 @@ export function ShopDetailClient({ shop, rows, history }: Props) {
         </TextLink>
 
         {(shop.contact_person || shop.contact_phone) ? (
-          <Card className="mt-4 p-3 md:p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-ink/50">
-              {t.shopContact}
-            </h3>
-            <div className="mt-2 flex flex-col gap-1">
-              {shop.contact_person ? (
-                <p className="text-sm md:text-base font-medium text-ink">
-                  {t.inCharge}: {shop.contact_person}
-                </p>
-              ) : null}
-              {shop.contact_phone ? (
-                <a href={`tel:${shop.contact_phone}`} className="text-sm md:text-base font-medium text-backwater underline-offset-2 hover:underline">
-                  {shop.contact_phone}
-                </a>
-              ) : null}
-            </div>
-          </Card>
+          <div className="mt-6">
+            <SectionHeading>{t.shopContact}</SectionHeading>
+            <Card className="mt-3 p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                {shop.contact_person ? (
+                  <p className="text-sm md:text-base font-medium text-ink">
+                    {t.inCharge}: {shop.contact_person}
+                  </p>
+                ) : null}
+                {shop.contact_phone ? (
+                  <a href={`tel:${shop.contact_phone}`} className="text-sm md:text-base font-medium text-backwater underline-offset-2 hover:underline">
+                    {shop.contact_phone}
+                  </a>
+                ) : null}
+              </div>
+            </Card>
+          </div>
         ) : null}
 
         <div className="mt-6">
@@ -96,23 +96,26 @@ export function ShopDetailClient({ shop, rows, history }: Props) {
           </div>
           
           {history && history.length > 0 ? (
-            <div className="mt-8">
-              <Button 
-                type="button" 
-                variant="secondary"
-                onClick={() => setShowHistory(!showHistory)}
-              >
-                {showHistory ? t.hideHistory : t.updateHistory}
-              </Button>
-              {showHistory ? (
-                <div className="mt-4">
-                  <AuditLogTable rows={history} />
-                </div>
-              ) : null}
+            <div className="mt-6">
+              <SectionHeading>{t.updateHistory}</SectionHeading>
+              <Card variant="browse" className="mt-3">
+                <Button 
+                  type="button" 
+                  variant="secondary"
+                  onClick={() => setShowHistory(!showHistory)}
+                >
+                  {showHistory ? t.hideHistory : t.updateHistory}
+                </Button>
+                {showHistory ? (
+                  <div className="mt-4">
+                    <AuditLogTable rows={history} />
+                  </div>
+                ) : null}
+              </Card>
             </div>
           ) : null}
 
-          <div className="mt-8 border-t border-paper-dim pt-6">
+          <div className="mt-6">
             <ReportComplaintForm shopId={shop.id} />
           </div>
         </div>

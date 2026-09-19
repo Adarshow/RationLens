@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 type Complaint = {
   id: string;
@@ -79,7 +80,7 @@ export function AdminComplaintsClient({ initialComplaints }: Props) {
       
       {complaints.length === 0 ? (
         <Card className="mt-6 text-center py-12">
-          <p className="text-ink/70">No complaints found.</p>
+          <p className="text-ink/70">{t.noComplaintsFound}</p>
         </Card>
       ) : (
         <CardGrid className="mt-6">
@@ -90,9 +91,10 @@ export function AdminComplaintsClient({ initialComplaints }: Props) {
                   <h3 className="font-bold text-ink text-lg line-clamp-2">
                     {complaint.shops?.name || t.unknownName}
                   </h3>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${complaint.status === 'open' ? 'bg-laterite/10 text-laterite' : 'bg-leaf/10 text-leaf'}`}>
-                    {complaint.status === 'open' ? t.open : t.resolved}
-                  </span>
+                  <StatusBadge 
+                    tone={complaint.status === 'open' ? 'danger' : 'success'} 
+                    label={complaint.status === 'open' ? t.open : t.resolved} 
+                  />
                 </div>
                 
                 <p className="mt-2 text-sm font-semibold text-ink/80">
@@ -106,8 +108,8 @@ export function AdminComplaintsClient({ initialComplaints }: Props) {
                 ) : null}
 
                 <div className="mt-4 flex flex-col gap-1 text-xs text-ink/60 border-t border-paper-dim pt-3">
-                  <p>Reported by: {complaint.profiles?.name || t.unknownName}</p>
-                  <p>Date: {formatDistanceToNow(new Date(complaint.created_at), { addSuffix: true })}</p>
+                  <p>{t.reportedBy}: {complaint.profiles?.name || t.unknownName}</p>
+                  <p>{t.dateLabel}: {formatDistanceToNow(new Date(complaint.created_at), { addSuffix: true })}</p>
                 </div>
               </div>
 

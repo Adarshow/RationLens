@@ -126,6 +126,10 @@ export const copy = {
     confirmAccurate: "Confirm accurate",
     confirmInaccurate: "Report inaccurate",
     confirmedBy: "confirmed by {n} of {m}",
+    reportedBy: "Reported by",
+    dateLabel: "Date",
+    noComplaintsFound: "No complaints found.",
+    shopkeeperDetails: "Shopkeeper details",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -252,5 +256,9 @@ export const copy = {
     confirmAccurate: "കൃത്യമാണെന്ന് സ്ഥിരീകരിക്കുക",
     confirmInaccurate: "കൃത്യമല്ലെന്ന് റിപ്പോർട്ട് ചെയ്യുക",
     confirmedBy: "{m} പേരിൽ {n} പേർ സ്ഥിരീകരിച്ചു",
+    reportedBy: "റിപ്പോർട്ട് ചെയ്തത്",
+    dateLabel: "തീയതി",
+    noComplaintsFound: "പരാതികളൊന്നും കണ്ടെത്തിയില്ല.",
+    shopkeeperDetails: "കടയുടമയുടെ വിവരങ്ങൾ",
   },
 } as const;

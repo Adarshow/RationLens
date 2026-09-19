@@ -65,7 +65,7 @@ export function RightsClient() {
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col gap-4 lg:grid lg:grid-cols-[1fr_auto] lg:items-start">
+      <div className="mt-6 flex flex-col gap-4 lg:grid lg:grid-cols-[1fr_auto] lg:items-start">
         <Card>
           <div className="flex flex-col gap-4 p-2">
             <div>

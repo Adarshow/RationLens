@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { createClient } from "@/lib/supabase/client";
@@ -159,9 +160,11 @@ export default function SignupPage() {
           </fieldset>
           
           {role === "shopkeeper" ? (
-            <div className="flex flex-col gap-4 border-t border-paper-dim pt-4 mt-2">
-              <Input
-                id="license"
+            <div className="mt-6">
+              <SectionHeading>{t.shopkeeperDetails}</SectionHeading>
+              <Card className="mt-3 flex flex-col gap-4">
+                <Input
+                  id="license"
                 label={t.licenseNumber}
                 value={licenseNumber}
                 onChange={(event) => setLicenseNumber(event.target.value)}
@@ -190,6 +193,7 @@ export default function SignupPage() {
                   required
                 />
               </div>
+              </Card>
             </div>
           ) : null}
 

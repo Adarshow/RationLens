@@ -10,21 +10,21 @@ const config: Config = {
     extend: {
       colors: {
         ink: "#10262B",
-        paper: "#F1EDE4",
-        "paper-dim": "#E8E2D4",
+        paper: "#F4EFDD",
+        "paper-dim": "#EAE2C9",
         backwater: {
-          DEFAULT: "#1F5C57",
-          light: "#2E7A73",
-          dark: "#153F3B",
+          DEFAULT: "#1F5C3E",
+          light: "#3C7A56",
+          dark: "#123B27",
         },
         monsoon: {
-          DEFAULT: "#2B3A67",
-          light: "#3D4F85",
+          DEFAULT: "#D97B3F",
+          light: "#E89A63",
         },
         marigold: {
-          DEFAULT: "#E0A458",
-          light: "#F0C48A",
-          dark: "#B87F3A",
+          DEFAULT: "#A9702F",
+          light: "#C98F4E",
+          dark: "#7C4F1F",
         },
         laterite: {
           DEFAULT: "#B23A2E",

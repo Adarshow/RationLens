@@ -49,7 +49,6 @@ export function ReportComplaintForm({ shopId }: Props) {
         variant="secondary" 
         fullWidth 
         onClick={() => setIsOpen(true)}
-        className="mt-4"
       >
         {t.reportIssue}
       </Button>
@@ -58,7 +57,7 @@ export function ReportComplaintForm({ shopId }: Props) {
 
   if (success) {
     return (
-      <Card variant="alert" tone="success" className="mt-4">
+      <Card variant="alert" tone="success">
         <p className="text-sm font-semibold">{t.complaintSubmitted}</p>
         <Button 
           type="button" 
@@ -79,7 +78,7 @@ export function ReportComplaintForm({ shopId }: Props) {
   }
 
   return (
-    <Card className="mt-4 p-4 border border-paper-dim shadow-sm">
+    <Card>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <h3 className="font-bold text-ink">{t.reportIssue}</h3>
         
