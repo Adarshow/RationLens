@@ -2,10 +2,11 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { cn } from "@/lib/cn";
+import { createClient } from "@/lib/supabase/client";
 
 type NavItem = {
   href: string;
@@ -104,18 +105,33 @@ function BookIcon() {
   );
 }
 
-
 const chromeInner =
   "mx-auto flex w-full items-center px-4 md:max-w-3xl md:px-6 lg:max-w-6xl lg:px-8";
 
 export function Nav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { lang, setLang, t } = useLanguage();
   const isShopkeeper = pathname.startsWith("/shopkeeper");
+  const isAdmin = pathname.startsWith("/admin");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (isShopkeeper) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user);
+    });
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isShopkeeper || isAdmin) return;
     let active = true;
     void fetch("/api/notifications")
       .then((response) => (response.ok ? response.json() : { count: 0 }))
@@ -128,9 +144,19 @@ export function Nav() {
     return () => {
       active = false;
     };
-  }, [isShopkeeper, pathname]);
+  }, [isShopkeeper, isAdmin, pathname]);
 
-  const items: NavItem[] = isShopkeeper
+  async function signOut() {
+    await createClient().auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
+
+  const items: NavItem[] = isAdmin
+    ? [
+        { href: "/admin/shopkeepers", label: t.adminShopkeeperQueue, icon: <BoxIcon /> },
+      ]
+    : isShopkeeper
     ? [
         { href: "/shopkeeper", label: t.stockSection, icon: <BoxIcon /> },
         { href: "/shopkeeper/upload", label: t.updatePhoto, icon: <CameraIcon /> },
@@ -140,8 +166,13 @@ export function Nav() {
         { href: "/dashboard", label: t.nearbyShops, icon: <ShopsIcon /> },
         { href: "/rights", label: t.rightsTitle, icon: <BookIcon /> },
         { href: "/notifications", label: t.notifications, icon: <BellIcon /> },
-        { href: "/login", label: t.login, icon: <UserIcon /> },
       ];
+
+  if (isLoggedIn || isAdmin) {
+    items.push({ href: "#logout", label: t.logout, icon: <UserIcon /> });
+  } else {
+    items.push({ href: "/login", label: t.login, icon: <UserIcon /> });
+  }
 
   function isActive(href: string) {
     if (href === "/shopkeeper") return pathname === "/shopkeeper";
@@ -194,6 +225,21 @@ export function Nav() {
             <ul className="flex items-center gap-1">
               {items.map((item) => {
                 const active = isActive(item.href);
+                if (item.href === "#logout") {
+                  return (
+                    <li key={item.href}>
+                      <button
+                        onClick={signOut}
+                        className={cn(
+                          "inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold",
+                          "text-ink/70 hover:bg-paper-dim hover:text-ink"
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    </li>
+                  );
+                }
                 return (
                   <li key={item.href}>
                     <Link href={item.href} className={cn(
@@ -221,9 +267,34 @@ export function Nav() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-paper-dim bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Main"
       >
-        <ul className={cn("grid", isShopkeeper ? "grid-cols-3" : "grid-cols-4")}>
+        <ul className={cn("grid", isAdmin ? "grid-cols-2" : isShopkeeper ? "grid-cols-4" : "grid-cols-4")}>
           {items.map((item) => {
             const active = isActive(item.href);
+            if (item.href === "#logout") {
+              return (
+                <li key={item.href}>
+                  <button
+                    onClick={signOut}
+                    className={cn(
+                      "flex min-h-14 w-full flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold",
+                      "text-ink/70",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-lg",
+                        "text-ink/70",
+                      )}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="relative line-clamp-1 text-center">
+                      {item.label}
+                    </span>
+                  </button>
+                </li>
+              );
+            }
             return (
               <li key={item.href}>
                 <Link

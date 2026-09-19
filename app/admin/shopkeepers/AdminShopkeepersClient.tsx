@@ -6,6 +6,8 @@ import { PageContainer, PageTitle, CardGrid } from "@/components/ui/PageContaine
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
+import { TextLink } from "@/components/TextLink";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Shopkeeper = {
   id: string;
@@ -27,8 +29,10 @@ type Props = {
 
 export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [selectedShops, setSelectedShops] = useState<Record<string, string>>({});
   const [pending, setPending] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState("");
 
   async function handleApprove(id: string) {
     const shopId = selectedShops[id];
@@ -37,6 +41,7 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
       return;
     }
 
+    setError("");
     setPending((p) => ({ ...p, [id]: true }));
     try {
       const res = await fetch("/api/admin/shopkeepers/approve", {
@@ -47,7 +52,7 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
       if (res.ok) {
         router.refresh();
       } else {
-        alert("Approval failed.");
+        setError(t.approvalFailed);
       }
     } finally {
       setPending((p) => ({ ...p, [id]: false }));
@@ -55,8 +60,9 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
   }
 
   async function handleReject(id: string) {
-    if (!confirm("Are you sure you want to reject this applicant?")) return;
+    if (!confirm(t.confirmReject)) return;
     
+    setError("");
     setPending((p) => ({ ...p, [id]: true }));
     try {
       const res = await fetch("/api/admin/shopkeepers/reject", {
@@ -67,7 +73,7 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
       if (res.ok) {
         router.refresh();
       } else {
-        alert("Rejection failed.");
+        setError(t.rejectionFailed);
       }
     } finally {
       setPending((p) => ({ ...p, [id]: false }));
@@ -76,20 +82,29 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
 
   return (
     <PageContainer>
-      <PageTitle>Shopkeeper Queue</PageTitle>
+      <TextLink href="/dashboard">{t.back}</TextLink>
+      <div className="mt-3">
+        <PageTitle>{t.shopkeeperQueueTitle}</PageTitle>
+      </div>
       
+      {error ? (
+        <Card variant="alert" tone="danger" role="alert" className="mt-6">
+          <p className="text-laterite">{error}</p>
+        </Card>
+      ) : null}
+
       {shopkeepers.length === 0 ? (
         <Card className="mt-6 text-center py-12">
-          <p className="text-ink/70">No pending shopkeeper applications.</p>
+          <p className="text-ink/70">{t.noPendingApplications}</p>
         </Card>
       ) : (
         <CardGrid className="mt-6">
           {shopkeepers.map((sk) => (
             <Card key={sk.id} className="flex flex-col gap-4">
               <div className="flex flex-col">
-                <h3 className="font-bold text-ink">{sk.name || "Unknown Name"}</h3>
-                <p className="text-sm text-ink/70">Phone: {sk.phone}</p>
-                <p className="text-sm text-ink/70">License: {sk.license_number}</p>
+                <h3 className="font-bold text-ink">{sk.name || t.unknownName}</h3>
+                <p className="text-sm text-ink/70">{t.phoneLabel}: {sk.phone}</p>
+                <p className="text-sm text-ink/70">{t.licenseLabel}: {sk.license_number}</p>
               </div>
 
               {sk.imageUrl ? (
@@ -98,18 +113,18 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
                 </div>
               ) : (
                 <div className="bg-paper border border-paper-dim rounded-lg p-4 text-center">
-                  <p className="text-sm text-ink/50">No proof image provided</p>
+                  <p className="text-sm text-ink/50">{t.noProofImage}</p>
                 </div>
               )}
 
               <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-paper-dim">
                 <Select
                   id={`shop-${sk.id}`}
-                  label="Assign Shop"
+                  label={t.assignShop}
                   value={selectedShops[sk.id] || ""}
                   onChange={(e) => setSelectedShops((s) => ({ ...s, [sk.id]: e.target.value }))}
                 >
-                  <option value="" disabled>Select a shop...</option>
+                  <option value="" disabled>{t.selectAShop}</option>
                   {shops.map((shop) => (
                     <option key={shop.id} value={shop.id}>
                       {shop.name}
@@ -124,7 +139,7 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
                     disabled={pending[sk.id]} 
                     onClick={() => handleApprove(sk.id)}
                   >
-                    Approve
+                    {t.approve}
                   </Button>
                   <Button 
                     type="button" 
@@ -133,7 +148,7 @@ export function AdminShopkeepersClient({ shopkeepers, shops }: Props) {
                     disabled={pending[sk.id]} 
                     onClick={() => handleReject(sk.id)}
                   >
-                    Reject
+                    {t.reject}
                   </Button>
                 </div>
               </div>

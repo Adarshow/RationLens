@@ -6,6 +6,7 @@ import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { VoiceControls } from "@/components/VoiceControls";
+import { TextLink } from "@/components/TextLink";
 import { cn } from "@/lib/cn";
 import {
   RATION_CARD_CATEGORIES,
@@ -31,8 +32,11 @@ export function RightsClient() {
 
   return (
     <PageContainer>
-      <PageTitle>{t.rightsTitle}</PageTitle>
-      <p className="mt-2 text-ink/70">{t.rightsIntro}</p>
+      <TextLink href="/dashboard">{t.back}</TextLink>
+      <div className="mt-3">
+        <PageTitle>{t.rightsTitle}</PageTitle>
+      </div>
+      <p className="mt-6 text-sm md:text-base text-ink/70">{t.rightsIntro}</p>
 
       <div className="mt-6">
         <SectionHeading>{t.selectCardColor}</SectionHeading>
