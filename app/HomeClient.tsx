@@ -64,9 +64,6 @@ export function HomeClient({ shops, stockByShop }: Props) {
             </div>
             
             <div className="mt-6 flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold text-ink/70">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-backwater">
-                <path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
               <span>{t.taglineCommunity}</span>
               <span className="text-ink/30">|</span>
               <span>{t.taglineTransparent}</span>

@@ -137,6 +137,10 @@ export const copy = {
     understandEntitlements: "Understand your entitlements",
     lowAccuracyLocation: "Location may be approximate",
     home: "Home",
+    shopsFoundOne: "1 shop found",
+    shopsFoundMany: "{n} shops found",
+    shopsNearYouNote: "Showing ration shops near your location. Stock information is updated by the shopkeeper.",
+    footerTagline: "A fairer Kerala through transparent ration distribution.",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -274,5 +278,9 @@ export const copy = {
     understandEntitlements: "നിങ്ങളുടെ അവകാശങ്ങൾ മനസ്സിലാക്കുക",
     lowAccuracyLocation: "സ്ഥലം ഏകദേശമായിരിക്കാം",
     home: "ഹോം",
+    shopsFoundOne: "1 കട കണ്ടെത്തി",
+    shopsFoundMany: "{n} കടകൾ കണ്ടെത്തി",
+    shopsNearYouNote: "നിങ്ങളുടെ സ്ഥലത്തിന് സമീപമുള്ള റേഷൻ കടകൾ കാണിക്കുന്നു. സ്റ്റോക്ക് വിവരങ്ങൾ കടയുടമ അപ്ഡേറ്റ് ചെയ്യുന്നു.",
+    footerTagline: "സുതാര്യമായ റേഷൻ വിതരണത്തിലൂടെ കൂടുതൽ നീതിയുള്ള കേരളം.",
   },
 } as const;

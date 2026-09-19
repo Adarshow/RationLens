@@ -198,7 +198,7 @@ export function DashboardClient({ shops, stockByShop }: Props) {
           <p className="font-medium text-ink">{searchLabel}</p>
         </Card>
       ) : null}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mt-1">
         <Button
           type="button"
           fullWidth
@@ -216,37 +216,76 @@ export function DashboardClient({ shops, stockByShop }: Props) {
           {t.map}
         </Button>
       </div>
+      <Card variant="browse" className="mt-2 flex items-start gap-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink/50 shrink-0 mt-0.5">
+          <circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>
+        </svg>
+        <p className="text-sm text-ink/70 leading-relaxed">{t.shopsNearYouNote}</p>
+      </Card>
     </aside>
   );
 
   return (
     <PageContainer>
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
-        <PageTitle>{t.nearbyShops}</PageTitle>
-        {activeLocation ? (
-          <div className="flex flex-col items-end">
-            <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span className="font-medium truncate" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
-                {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
-              </span>
-            </div>
-            {status === "granted" && accuracy && accuracy > 1000 && (
-              <p className="mt-1 text-xs text-ink/60">{t.lowAccuracyLocation}</p>
-            )}
+      {/* HERO SECTION */}
+      <div 
+        className="relative overflow-hidden rounded-2xl bg-cover bg-center mb-8" 
+        style={{ backgroundImage: "url('/nearby.png')" }}
+      >
+        <div className="bg-gradient-to-r from-paper via-paper/90 to-transparent p-6 md:p-8 min-h-[160px] flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <h1 className="text-3xl md:text-5xl font-bold text-ink leading-tight">
+              {t.nearbyShops}
+            </h1>
+            <p className="mt-2 text-sm md:text-base text-ink/80 leading-relaxed font-medium">
+              {t.nearbyShopsSubtitle}
+            </p>
           </div>
-        ) : null}
+          
+          {activeLocation ? (
+            <div className="flex flex-col items-start md:items-end">
+              <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-full shadow-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span className="font-medium truncate mr-2" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
+                  {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
+                </span>
+                <button type="button" onClick={() => refresh()} className="ml-auto text-xs font-bold text-backwater hover:underline whitespace-nowrap">
+                  Change
+                </button>
+              </div>
+              {status === "granted" && accuracy && accuracy > 1000 && (
+                <p className="mt-1 text-xs text-ink/60 font-medium">{t.lowAccuracyLocation}</p>
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
-      <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,20rem)_1fr] lg:items-start lg:gap-8">
+
+      {/* RESULTS SUMMARY ROW */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <p className="text-ink text-base font-semibold">
+          {filteredShops.length === 1 
+            ? t.shopsFoundOne 
+            : (t.shopsFoundMany as string).replace("{n}", String(filteredShops.length))}
+        </p>
+        <div className="flex items-center gap-3">
+          <label htmlFor="sort" className="text-sm font-semibold text-ink/70">Sort by</label>
+          <select 
+            id="sort" 
+            className="rounded-lg border border-paper-dim bg-white px-3 py-1.5 text-sm font-semibold text-ink outline-none focus:border-backwater focus:ring-1 focus:ring-backwater appearance-none pr-8 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2310262B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-no-repeat bg-[position:right_0.5rem_center]"
+          >
+            <option>Nearest first</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(16rem,20rem)_1fr] lg:items-start lg:gap-8">
         {filters}
         <div>
-          <SectionHeading>
-            {view === "map" ? t.map : t.list}
-          </SectionHeading>
-          <div className="mt-3">
+          <div className="mt-0">
             {view === "map" ? (
               <ShopMap
                 shops={filteredShops}
@@ -273,6 +312,27 @@ export function DashboardClient({ shops, stockByShop }: Props) {
           </div>
         </div>
       </div>
+
+      {/* FOOTER */}
+      <footer className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl bg-paper-dim px-6 py-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-paper shrink-0 shadow-sm border border-black/5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-backwater">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-lg font-extrabold text-ink">{t.appName}</p>
+            <p className="text-sm font-medium text-ink/70 mt-0.5">{t.footerTagline}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-backwater shrink-0 opacity-80">
+             <path d="M8 20V10M12 20V4M16 20v-8"></path><path d="M4 22h16"></path><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+           </svg>
+           <p className="text-base font-['Style_Script',cursive] text-ink/70 tracking-wide italic">Nammude Ration, Nammude Avakasham</p>
+        </div>
+      </footer>
     </PageContainer>
   );
 }
