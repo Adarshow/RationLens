@@ -22,7 +22,7 @@ type Recognition = {
 
 type Props = {
   lang: Lang;
-  onTranscript: (value: string) => void;
+  onTranscript?: (value: string) => void;
   speakText?: string;
 };
 
@@ -68,7 +68,7 @@ export function VoiceControls({ lang, onTranscript, speakText }: Props) {
     recognition.interimResults = false;
     recognition.onresult = (event) => {
       const transcript = event.results[0]?.[0]?.transcript?.trim();
-      if (transcript) onTranscript(transcript);
+      if (transcript && onTranscript) onTranscript(transcript);
     };
     recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);
@@ -106,16 +106,18 @@ export function VoiceControls({ lang, onTranscript, speakText }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2" aria-label={t.voiceControls}>
-      <Button
-        type="button"
-        variant={listening ? "danger" : "secondary"}
-        fullWidth={false}
-        aria-label={listening ? t.stopListening : t.voiceSearch}
-        onClick={toggleListening}
-      >
-        <span aria-hidden>{listening ? "■" : "◉"}</span>
-        <span className="ml-2">{listening ? t.stopListening : t.voiceSearch}</span>
-      </Button>
+      {onTranscript ? (
+        <Button
+          type="button"
+          variant={listening ? "danger" : "secondary"}
+          fullWidth={false}
+          aria-label={listening ? t.stopListening : t.voiceSearch}
+          onClick={toggleListening}
+        >
+          <span aria-hidden>{listening ? "■" : "◉"}</span>
+          <span className="ml-2">{listening ? t.stopListening : t.voiceSearch}</span>
+        </Button>
+      ) : null}
       {speakText ? (
         <Button
           type="button"
