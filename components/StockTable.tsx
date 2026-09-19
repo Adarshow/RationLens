@@ -5,6 +5,7 @@ import { StatusBadge, stockLabel, stockTone } from "@/components/ui/StatusBadge"
 import { Card } from "@/components/ui/Card";
 import { CardGrid } from "@/components/ui/PageContainer";
 import { TrustBadge } from "@/components/TrustBadge";
+import { ConfirmStockButtons } from "@/components/ConfirmStockButtons";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { StockWithItem } from "@/lib/mockData";
 
@@ -41,11 +42,18 @@ export function StockTable({ rows, action, columns = 3 }: Props) {
               </div>
               <StatusBadge tone={tone} label={stockLabel(row.status)} />
             </div>
-            <div className="mt-3">
+            <div className="mt-3 flex flex-col items-start gap-4 md:flex-row md:items-end md:justify-between">
               <TrustBadge
                 lastUpdatedAt={row.last_updated_at}
                 verificationStatus={row.verification_status}
               />
+              {row.latest_update_id && row.shop_id && row.item_id ? (
+                <ConfirmStockButtons 
+                  stockUpdateId={row.latest_update_id} 
+                  shopId={row.shop_id} 
+                  itemId={row.item_id} 
+                />
+              ) : null}
             </div>
             {action ? <div className="mt-3">{action(row)}</div> : null}
           </Card>

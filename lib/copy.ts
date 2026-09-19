@@ -121,6 +121,11 @@ export const copy = {
     open: "Open",
     shopContact: "Shop contact",
     inCharge: "In charge",
+    updateHistory: "View update history",
+    hideHistory: "Hide history",
+    confirmAccurate: "Confirm accurate",
+    confirmInaccurate: "Report inaccurate",
+    confirmedBy: "confirmed by {n} of {m}",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -242,5 +247,10 @@ export const copy = {
     open: "തുറന്നത്",
     shopContact: "കടയുടെ ബന്ധപ്പെടേണ്ട വിവരം",
     inCharge: "ചുമതലയുള്ളയാൾ",
+    updateHistory: "അപ്ഡേറ്റ് ചരിത്രം കാണുക",
+    hideHistory: "ചരിത്രം മറയ്ക്കുക",
+    confirmAccurate: "കൃത്യമാണെന്ന് സ്ഥിരീകരിക്കുക",
+    confirmInaccurate: "കൃത്യമല്ലെന്ന് റിപ്പോർട്ട് ചെയ്യുക",
+    confirmedBy: "{m} പേരിൽ {n} പേർ സ്ഥിരീകരിച്ചു",
   },
 } as const;

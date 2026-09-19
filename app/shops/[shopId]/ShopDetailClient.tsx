@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { StockTable } from "@/components/StockTable";
 import { NotifyButton } from "@/components/NotifyButton";
 import { ReportComplaintForm } from "@/components/ReportComplaintForm";
@@ -8,9 +9,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TextLink } from "@/components/TextLink";
+import { Button } from "@/components/ui/Button";
+import { AuditLogTable } from "@/components/AuditLogTable";
 import { useLanguage } from "@/components/LanguageProvider";
 import { shopDistanceKm, type StockWithItem } from "@/lib/mockData";
-import type { Shop } from "@/lib/types";
+import type { Shop, StockUpdate } from "@/lib/types";
 import {
   resolveUserLocation,
   useUserLocation,
@@ -19,10 +22,12 @@ import {
 type Props = {
   shop: Shop | null;
   rows: StockWithItem[];
+  history: (StockUpdate & { item_name?: string | null; item_unit?: string | null })[];
 };
 
-export function ShopDetailClient({ shop, rows }: Props) {
+export function ShopDetailClient({ shop, rows, history }: Props) {
   const { t } = useLanguage();
+  const [showHistory, setShowHistory] = useState(false);
   const { location, status } = useUserLocation();
   const activeLocation = resolveUserLocation(status, location);
 
@@ -89,6 +94,23 @@ export function ShopDetailClient({ shop, rows }: Props) {
             />
           </div>
           
+          {history && history.length > 0 ? (
+            <div className="mt-8">
+              <Button 
+                type="button" 
+                variant="secondary"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? t.hideHistory : t.updateHistory}
+              </Button>
+              {showHistory ? (
+                <div className="mt-4">
+                  <AuditLogTable rows={history} />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="mt-8 border-t border-paper-dim pt-6">
             <ReportComplaintForm shopId={shop.id} />
           </div>

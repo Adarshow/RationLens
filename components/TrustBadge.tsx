@@ -16,10 +16,20 @@ export function TrustBadge({ lastUpdatedAt, verificationStatus }: Props) {
     verificationStatus === "shop_verified" ||
     verificationStatus === "ai_assisted";
 
+  let dotColor = "bg-ink/30";
+  if (verificationStatus === "shop_verified") {
+    dotColor = "bg-leaf";
+  } else if (verificationStatus === "ai_assisted") {
+    dotColor = "bg-sun";
+  }
+
   return (
-    <p className="text-sm text-ink/70 md:text-base">
-      Updated {when} · Source: {source}
-      {verified ? " · Verified" : ""}
+    <p className="flex items-center gap-1.5 text-sm text-ink/70 md:text-base">
+      <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotColor}`} aria-hidden="true" />
+      <span>
+        Updated {when} · Source: {source}
+        {verified ? " · Verified" : ""}
+      </span>
     </p>
   );
 }

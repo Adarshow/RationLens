@@ -218,7 +218,7 @@ export const mockImageDetection: ImageStockProposal = {
 
 export const SHOPKEEPER_SHOP_ID = "shop-a";
 
-export type StockWithItem = Stock & { item: Item };
+export type StockWithItem = Stock & { item: Item; latest_update_id?: string | null };
 
 export function getItem(itemId: string): Item | undefined {
   return items.find((item) => item.id === itemId);
