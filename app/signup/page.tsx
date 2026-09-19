@@ -1,20 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Input, Select } from "@/components/ui/Input";
+import { Input } from "@/components/ui/Input";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { TextLink } from "@/components/TextLink";
 import { useLanguage } from "@/components/LanguageProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/types";
-
-type ShopOption = {
-  id: string;
-  name: string;
-};
 
 export default function SignupPage() {
   const { t } = useLanguage();
@@ -23,29 +18,30 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("citizen");
-  const [shopId, setShopId] = useState("");
-  const [shops, setShops] = useState<ShopOption[]>([]);
+  
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [phone, setPhone] = useState("");
+  const [proofImageFile, setProofImageFile] = useState<File | null>(null);
+
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    void supabase
-      .from("shops")
-      .select("id, name")
-      .order("name")
-      .then(({ data }) => {
-        const rows = data ?? [];
-        setShops(rows);
-        setShopId((current) => current || rows[0]?.id || "");
-      });
-  }, []);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
     setNotice("");
+
+    if (role === "shopkeeper" && (!licenseNumber || !phone || !proofImageFile)) {
+      setError("Please fill out all shopkeeper fields and upload a license photo.");
+      return;
+    }
+    
+    if (role === "shopkeeper" && proofImageFile && proofImageFile.size > 5 * 1024 * 1024) {
+      setError("Please choose a license photo smaller than 5 MB.");
+      return;
+    }
+
     setPending(true);
 
     try {
@@ -60,11 +56,30 @@ export default function SignupPage() {
         return;
       }
 
+      let proofImagePath = null;
+      if (role === "shopkeeper" && proofImageFile) {
+        const ext = proofImageFile.name.split(".").pop() || "jpg";
+        const path = `${data.user.id}/proof.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("shopkeeper-proofs")
+          .upload(path, proofImageFile, { upsert: true });
+        
+        if (uploadError) {
+          setError("Failed to upload proof image. Please try again.");
+          return;
+        }
+        proofImagePath = path;
+      }
+
       const { error: profileError } = await supabase.from("profiles").insert({
         id: data.user.id,
         name,
         role,
-        shop_id: role === "shopkeeper" ? shopId || null : null,
+        shop_id: null,
+        verification_status: role === "citizen" ? "approved" : "pending",
+        license_number: role === "shopkeeper" ? licenseNumber : null,
+        phone: role === "shopkeeper" ? phone : null,
+        proof_image_path: proofImagePath,
       });
 
       if (profileError && data.session) {
@@ -78,10 +93,10 @@ export default function SignupPage() {
       }
 
       if (role === "shopkeeper") {
-        router.push("/shopkeeper");
-        router.refresh();
+        setNotice(t.applicationSubmitted);
         return;
       }
+      
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -142,31 +157,63 @@ export default function SignupPage() {
               </label>
             </div>
           </fieldset>
+          
           {role === "shopkeeper" ? (
-            <Select
-              id="shop"
-              label={t.assignedShop}
-              value={shopId}
-              onChange={(event) => setShopId(event.target.value)}
-            >
-              {shops.map((shop) => (
-                <option key={shop.id} value={shop.id}>
-                  {shop.name}
-                </option>
-              ))}
-            </Select>
+            <div className="flex flex-col gap-4 border-t border-paper-dim pt-4 mt-2">
+              <Input
+                id="license"
+                label={t.licenseNumber}
+                value={licenseNumber}
+                onChange={(event) => setLicenseNumber(event.target.value)}
+                required
+              />
+              <Input
+                id="phone"
+                label={t.phoneNumber}
+                type="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                required
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-ink" htmlFor="proof">
+                  {t.uploadLicensePhoto}
+                </label>
+                <input
+                  id="proof"
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm mt-1"
+                  onChange={(event) => {
+                    setProofImageFile(event.target.files?.[0] || null);
+                  }}
+                  required
+                />
+              </div>
+            </div>
           ) : null}
+
           {error ? (
             <Card variant="alert" tone="danger" role="alert">
               <p className="text-laterite">{error}</p>
             </Card>
           ) : null}
           {notice ? (
-            <p className="text-sm text-ink/70 md:text-base">{notice}</p>
+            <Card variant="alert" tone="success" role="status">
+              <p className="text-sm md:text-base">{notice}</p>
+              {role === "shopkeeper" ? (
+                <Button href="/dashboard" className="mt-4" fullWidth={false} variant="secondary">
+                  Go to Dashboard
+                </Button>
+              ) : null}
+            </Card>
           ) : null}
-          <Button type="submit" fullWidth disabled={pending}>
-            {t.signup}
-          </Button>
+          
+          {!notice || role !== "shopkeeper" ? (
+            <Button type="submit" fullWidth disabled={pending}>
+              {t.signup}
+            </Button>
+          ) : null}
         </form>
         <p className="mt-6">
           <TextLink href="/login">{t.login}</TextLink>

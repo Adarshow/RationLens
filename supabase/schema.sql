@@ -4,6 +4,10 @@ insert into storage.buckets (id, name, public)
 values ('stock-images', 'stock-images', false)
 on conflict (id) do nothing;
 
+insert into storage.buckets (id, name, public)
+values ('shopkeeper-proofs', 'shopkeeper-proofs', false)
+on conflict (id) do nothing;
+
 do $$ begin create type user_role as enum ('citizen', 'shopkeeper', 'admin'); exception when duplicate_object then null; end $$;
 do $$ begin create type stock_status as enum ('available', 'low_stock', 'out_of_stock', 'unknown'); exception when duplicate_object then null; end $$;
 do $$ begin create type verification_status as enum ('shop_verified', 'ai_assisted', 'community_report'); exception when duplicate_object then null; end $$;
@@ -19,7 +23,9 @@ create table if not exists items (
 create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade, name text,
   role user_role not null default 'citizen', language text default 'en',
-  shop_id uuid references shops(id), created_at timestamptz default now()
+  shop_id uuid references shops(id), created_at timestamptz default now(),
+  verification_status text not null default 'pending' check (verification_status in ('pending','approved','rejected')),
+  license_number text, proof_image_path text, phone text
 );
 create table if not exists stock (
   id uuid primary key default uuid_generate_v4(), shop_id uuid not null references shops(id) on delete cascade,
@@ -61,6 +67,29 @@ drop policy if exists "public can read stock" on stock;
 create policy "public can read stock" on stock for select using (true);
 drop policy if exists "users read own profile" on profiles;
 create policy "users read own profile" on profiles for select using (auth.uid() = id);
+
+drop policy if exists "admins read all profiles" on profiles;
+create policy "admins read all profiles" on profiles for select using (
+  exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'admin')
+);
+
+drop policy if exists "admins update all profiles" on profiles;
+create policy "admins update all profiles" on profiles for update using (
+  exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'admin')
+);
+
+drop policy if exists "users can upload their own proof" on storage.objects;
+create policy "users can upload their own proof" on storage.objects for insert
+with check ( bucket_id = 'shopkeeper-proofs' and auth.uid() = owner );
+
+drop policy if exists "admins can read all proofs" on storage.objects;
+create policy "admins can read all proofs" on storage.objects for select
+using ( bucket_id = 'shopkeeper-proofs' and exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'admin') );
+
+drop policy if exists "users can read own proof" on storage.objects;
+create policy "users can read own proof" on storage.objects for select
+using ( bucket_id = 'shopkeeper-proofs' and auth.uid() = owner );
+
 drop policy if exists "users create own profile" on profiles;
 create policy "users create own profile" on profiles for insert with check (auth.uid() = id);
 drop policy if exists "shopkeepers update their stock" on stock;

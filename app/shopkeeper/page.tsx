@@ -6,6 +6,8 @@ import {
   getStockForShop,
   type StockWithItem,
 } from "@/lib/mockData";
+import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
+import { Card } from "@/components/ui/Card";
 import type { Item, LocalizedNames, Stock } from "@/lib/types";
 
 type StockQueryRow = Stock & {
@@ -59,9 +61,33 @@ export default async function ShopkeeperDashboardPage({
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("shop_id")
+      .select("shop_id, verification_status, license_number")
       .eq("id", user.id)
       .maybeSingle();
+
+    if (profile?.verification_status === "pending") {
+      return (
+        <PageContainer>
+          <PageTitle>Verification Pending</PageTitle>
+          <Card className="mt-6 text-center py-12">
+            <p className="text-lg font-medium text-ink">Your shopkeeper account is awaiting verification.</p>
+            <p className="mt-2 text-ink/70">You submitted license number {profile.license_number} — an admin will review it shortly.</p>
+          </Card>
+        </PageContainer>
+      );
+    }
+
+    if (profile?.verification_status === "rejected") {
+      return (
+        <PageContainer>
+          <PageTitle>Verification Rejected</PageTitle>
+          <Card className="mt-6 text-center py-12" variant="alert" tone="danger">
+            <p className="text-lg font-medium text-laterite">Your application was not approved.</p>
+            <p className="mt-2 text-ink/70">Please contact support for more details.</p>
+          </Card>
+        </PageContainer>
+      );
+    }
 
     const shopId = profile?.shop_id as string | null | undefined;
     if (!shopId) {

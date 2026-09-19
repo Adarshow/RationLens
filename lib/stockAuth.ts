@@ -21,12 +21,16 @@ export async function requireOwnedShop(shopId: unknown) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("shop_id")
+    .select("shop_id, verification_status")
     .eq("id", user.id)
     .maybeSingle();
 
   if (!profile?.shop_id || profile.shop_id !== shopId) {
     return { error: jsonError("You cannot update this shop.", 403) };
+  }
+
+  if (profile.verification_status !== "approved") {
+    return { error: jsonError("Your shopkeeper account is still pending verification.", 403) };
   }
 
   return { supabase, user, shopId };

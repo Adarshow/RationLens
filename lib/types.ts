@@ -34,6 +34,10 @@ export type Profile = {
   language: string | null;
   shop_id: string | null;
   created_at: string | null;
+  verification_status: "pending" | "approved" | "rejected";
+  license_number: string | null;
+  proof_image_path: string | null;
+  phone: string | null;
 };
 
 export type Shop = {
