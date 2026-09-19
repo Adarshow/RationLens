@@ -30,6 +30,8 @@ function toShop(row: Shop): Shop {
     latitude: Number(row.latitude),
     longitude: Number(row.longitude),
     created_at: row.created_at ?? null,
+    contact_person: row.contact_person ?? null,
+    contact_phone: row.contact_phone ?? null,
   };
 }
 
@@ -61,7 +63,7 @@ export default async function ShopDetailPage({
     const supabase = createClient();
     const { data: shopRow } = await supabase
       .from("shops")
-      .select("id, name, address, latitude, longitude, created_at")
+      .select("id, name, address, latitude, longitude, created_at, contact_person, contact_phone")
       .eq("id", params.shopId)
       .maybeSingle();
 

@@ -47,6 +47,8 @@ export type Shop = {
   latitude: number;
   longitude: number;
   created_at: string | null;
+  contact_person?: string | null;
+  contact_phone?: string | null;
 };
 
 export type Item = {

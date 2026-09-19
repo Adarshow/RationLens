@@ -3,6 +3,7 @@
 import { StockTable } from "@/components/StockTable";
 import { NotifyButton } from "@/components/NotifyButton";
 import { ReportComplaintForm } from "@/components/ReportComplaintForm";
+import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageContainer, PageTitle } from "@/components/ui/PageContainer";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -52,6 +53,27 @@ export function ShopDetailClient({ shop, rows }: Props) {
         <TextLink href={maps} external>
           {t.getDirections}
         </TextLink>
+
+        {(shop.contact_person || shop.contact_phone) ? (
+          <Card className="mt-4 p-3 md:p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+              {t.shopContact}
+            </h3>
+            <div className="mt-2 flex flex-col gap-1">
+              {shop.contact_person ? (
+                <p className="text-sm md:text-base font-medium text-ink">
+                  {t.inCharge}: {shop.contact_person}
+                </p>
+              ) : null}
+              {shop.contact_phone ? (
+                <a href={`tel:${shop.contact_phone}`} className="text-sm md:text-base font-medium text-backwater underline-offset-2 hover:underline">
+                  {shop.contact_phone}
+                </a>
+              ) : null}
+            </div>
+          </Card>
+        ) : null}
+
         <div className="mt-6">
           <SectionHeading>{t.stockSection}</SectionHeading>
           <div className="mt-3">

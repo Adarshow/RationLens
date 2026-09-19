@@ -119,6 +119,8 @@ export const copy = {
     markResolved: "Mark resolved",
     resolved: "Resolved",
     open: "Open",
+    shopContact: "Shop contact",
+    inCharge: "In charge",
   },
   ml: {
     appName: "റേഷൻലെൻസ്",
@@ -238,5 +240,7 @@ export const copy = {
     markResolved: "പരിഹരിച്ചതായി അടയാളപ്പെടുത്തുക",
     resolved: "പരിഹരിച്ചു",
     open: "തുറന്നത്",
+    shopContact: "കടയുടെ ബന്ധപ്പെടേണ്ട വിവരം",
+    inCharge: "ചുമതലയുള്ളയാൾ",
   },
 } as const;
