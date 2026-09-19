@@ -25,6 +25,7 @@ export const FALLBACK_LOCATION = {
 export type UserLocation = {
   latitude: number;
   longitude: number;
+  accuracy?: number;
 };
 
 export const shops: Shop[] = [

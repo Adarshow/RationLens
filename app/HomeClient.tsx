@@ -21,8 +21,9 @@ type Props = {
 
 export function HomeClient({ shops, stockByShop }: Props) {
   const { lang, t } = useLanguage();
-  const { location, status, placeName } = useUserLocation();
+  const { location, status, placeName, refresh } = useUserLocation();
   const activeLocation = resolveUserLocation(status, location);
+  const accuracy = location?.accuracy;
 
   const sortedShops = useMemo(
     () =>
@@ -83,18 +84,36 @@ export function HomeClient({ shops, stockByShop }: Props) {
             <SectionHeading>{t.nearbyShops}</SectionHeading>
             <p className="mt-1 text-sm text-ink/70">{t.nearbyShopsSubtitle}</p>
           </div>
-          {activeLocation ? (
-            <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%] md:max-w-[50%]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span className="font-medium truncate mr-2" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
-                {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
-              </span>
-              <Link href="/dashboard" className="ml-auto text-xs font-bold text-monsoon hover:underline whitespace-nowrap">
-                Change
-              </Link>
+          {status === "loading" ? (
+            <p className="text-sm text-ink/70">{t.findingLocation}</p>
+          ) : status === "denied" || status === "unsupported" ? (
+            <p className="text-sm text-ink/70 text-right">
+              {t.approximateLocation}{" "}
+              <button
+                type="button"
+                className="font-semibold text-monsoon underline-offset-2 hover:underline"
+                onClick={() => refresh()}
+              >
+                {t.tryAgain}
+              </button>
+            </p>
+          ) : activeLocation ? (
+            <div className="flex flex-col items-end">
+              <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%] md:max-w-full">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span className="font-medium truncate mr-2" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
+                  {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
+                </span>
+                <Link href="/dashboard" className="ml-auto text-xs font-bold text-monsoon hover:underline whitespace-nowrap">
+                  Change
+                </Link>
+              </div>
+              {status === "granted" && accuracy && accuracy > 1000 && (
+                <p className="mt-1 text-xs text-ink/60">{t.lowAccuracyLocation}</p>
+              )}
             </div>
           ) : null}
         </div>

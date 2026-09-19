@@ -60,9 +60,11 @@ export function UserLocationProvider({ children }: { children: ReactNode }) {
       (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
+        const acc = position.coords.accuracy;
         setLocation({
           latitude: lat,
           longitude: lon,
+          accuracy: acc,
         });
         setStatus("granted");
         void fetchPlaceName(lat, lon);
@@ -70,16 +72,20 @@ export function UserLocationProvider({ children }: { children: ReactNode }) {
       () => {
         setLocation(null);
         setStatus("denied");
+        void fetchPlaceName(FALLBACK_LOCATION.latitude, FALLBACK_LOCATION.longitude);
       },
       {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 60_000,
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
       },
     );
   }, []);
 
   useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      void fetchPlaceName(FALLBACK_LOCATION.latitude, FALLBACK_LOCATION.longitude);
+    }
     refresh();
   }, [refresh]);
 

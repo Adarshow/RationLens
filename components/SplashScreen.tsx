@@ -2,11 +2,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-import { useRouter } from "next/navigation";
-
 export function SplashScreen() {
   const [visible, setVisible] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem("rationlens-splash-shown");
@@ -19,11 +16,10 @@ export function SplashScreen() {
     const timer = setTimeout(() => {
       sessionStorage.setItem("rationlens-splash-shown", "true");
       setVisible(false);
-      router.push("/dashboard");
-    }, 2000);
-    
+    }, 3000);
+
     return () => clearTimeout(timer);
-  }, [router]);
+  }, []);
 
   if (!visible) return null;
 

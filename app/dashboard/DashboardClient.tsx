@@ -41,6 +41,7 @@ export function DashboardClient({ shops, stockByShop }: Props) {
   const [noteDismissed, setNoteDismissed] = useState(false);
   const { location, status, refresh, placeName } = useUserLocation();
   const activeLocation = resolveUserLocation(status, location);
+  const accuracy = location?.accuracy;
 
   const sorted = useMemo(
     () =>
@@ -223,14 +224,19 @@ export function DashboardClient({ shops, stockByShop }: Props) {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
         <PageTitle>{t.nearbyShops}</PageTitle>
         {activeLocation ? (
-          <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%]">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span className="font-medium truncate" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
-              {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
-            </span>
+          <div className="flex flex-col items-end">
+            <div className="flex items-center text-sm text-ink/70 bg-paper-dim px-3 py-1.5 rounded-full w-fit max-w-[90%]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 shrink-0 text-backwater">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span className="font-medium truncate" title={placeName || `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}>
+                {placeName ? placeName : `${activeLocation.latitude.toFixed(4)}, ${activeLocation.longitude.toFixed(4)}`}
+              </span>
+            </div>
+            {status === "granted" && accuracy && accuracy > 1000 && (
+              <p className="mt-1 text-xs text-ink/60">{t.lowAccuracyLocation}</p>
+            )}
           </div>
         ) : null}
       </div>
